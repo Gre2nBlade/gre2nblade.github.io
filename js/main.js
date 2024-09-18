@@ -33,6 +33,7 @@ convertBtn.addEventListener('click', () => {
   if (mrpackFile) {
     convertMrpack(mrpackFile);
   }
+});
 
     convertBtn.disabled = true;
     downloadBtn.disabled = true;
@@ -50,8 +51,7 @@ convertBtn.addEventListener('click', () => {
     } finally {
         convertBtn.disabled = false;
         progressBar.classList.add('hidden');
-    }
-});
+}
 
 async function convertMrpack(file) {
   convertBtn.disabled = true;
