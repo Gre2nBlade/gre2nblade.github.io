@@ -162,7 +162,7 @@
             }
         });
 
-        function convertMrpackToZip(mrpackFile) {
+        async function convertMrpackToZip(mrpackFile) {
             const worker = new Worker('worker.js');
 
             worker.onmessage = function(e) {
