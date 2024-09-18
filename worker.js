@@ -24,8 +24,8 @@ self.onmessage = async function(e) {
 
         // Add overrides
         const overridesFolder = mrpackZip.folder('overrides');
-        if (overridesFolder) {
-            await addFolderToZip(overridesFolder, zip);
+            if (overridesFolder) {
+                await addFolderToZip(overridesFolder, zip);
         }
 
         const zipBlob = await zip.generateAsync({ type: 'blob' });
@@ -51,13 +51,9 @@ async function fetchFile(url) {
 }
 
 async function addFolderToZip(folder, zip, path = '') {
-    const files = await folder.files;
+    const files = await folder.filter((relativePath, file) => !file.dir);
     for (const [fileName, file] of Object.entries(files)) {
-        if (file.dir) {
-            await addFolderToZip(file, zip, `${path}${fileName}/`);
-        } else {
-            const content = await file.async('arraybuffer');
-            zip.file(`${path}${fileName}`, content);
-        }
+        const content = await file.async('arraybuffer');
+        zip.file(`${path}${fileName}`, content);
     }
 }
