@@ -52,7 +52,6 @@ convertBtn.addEventListener('click', () => {
         convertBtn.disabled = false;
         progressBar.classList.add('hidden');
     }
-});
 
 async function convertMrpack(file) {
   convertBtn.disabled = true;
