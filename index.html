@@ -144,6 +144,7 @@
                 selectedFile = file;
                 dropArea.textContent = `Selected file: ${file.name}`;
                 convertBtn.disabled = false;
+                downloadBtn.style.display = 'none';
             } else {
                 Toastify({
                     text: "Please select a valid .mrpack file",
@@ -233,6 +234,18 @@
             convertBtn.disabled = false;
             progressFill.style.width = '0%';
         }
+
+        worker.onerror = function(error) {
+            console.error('Worker error:', error);
+            Toastify({
+                text: "An error occurred during conversion",
+                duration: 5000,
+                gravity: "top",
+                position: 'right',
+                backgroundColor: "#ff4444"
+            }).showToast();
+            resetUI();
+        };
     </script>
 </body>
 </html>
