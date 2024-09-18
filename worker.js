@@ -1,3 +1,4 @@
+self.onmessage = async (event) => {
 importScripts('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js');
 
 const filesToProcess = index.files.filter(file => !file.path.match(/^\d+$/));
@@ -51,4 +52,5 @@ async function addFolderToZip(folder, zip, path = '') {
             }
         })
     );
+}
 }
