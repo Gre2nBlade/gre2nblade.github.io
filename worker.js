@@ -1,9 +1,15 @@
 self.onmessage = async (event) => {
 importScripts('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js');
 
-const filesToProcess = index.files.filter(file => !file.path.match(/^\d+$/));
-const indexJson = await mrpackZip.file('modrinth.index.json').async('string');
-const index = JSON.parse(indexJson);
+self.onmessage = async (event) => {
+    try {
+        const mrpackZip = new JSZip();
+        await mrpackZip.loadAsync(event.data.file);
+
+        const indexJson = await mrpackZip.file('modrinth.index.json').async('string');
+        const index = JSON.parse(indexJson);
+
+        const filesToProcess = index.files.filter(file => !file.path.match(/^\d+$/));
 
 let filesProcessed = 0;
 const totalFiles = index.files.length;
@@ -53,4 +59,8 @@ async function addFolderToZip(folder, zip, path = '') {
         })
     );
 }
-}
+} catch (error) {
+        console.error('Error processing MRPACK file:', error);
+        self.postMessage({ error: error.message });
+    }
+};
