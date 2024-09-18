@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <title>MRPACK to ZIP Converter</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
@@ -70,6 +71,7 @@
             margin-bottom: 20px;
             overflow: hidden;
             display: none;
+            margin-top: 10px;
         }
         #progressFill {
             height: 100%;
@@ -195,6 +197,41 @@
 
         function updateProgress(progress) {
             progressFill.style.width = `${progress}%`;
+        }
+
+        worker.onmessage = function(e) {
+            if (e.data.progress) {
+                updateProgress(e.data.progress);
+            } else if (e.data.zipBlob) {
+                const zipBlob = e.data.zipBlob;
+                downloadBtn.onclick = () => {
+                    saveAs(zipBlob, selectedFile.name.replace('.mrpack', '.zip'));
+        };
+                downloadBtn.style.display = 'block';
+                    Toastify({
+                         text: "Conversion complete!",
+                         duration: 3000,
+                         gravity: "top",
+                         position: 'right',
+                         backgroundColor: "#4CAF50"
+                     }).showToast();
+            } else if (e.data.error) {
+                Toastify({
+                    text: `Error: ${e.data.error}`,
+                    duration: 5000,
+                    gravity: "top",
+                    position: 'right',
+                    backgroundColor: "#ff4444"
+                }).showToast();
+        console.error('Conversion error:', e.data.error);
+        resetUI();
+            }
+        };
+
+        function resetUI() {
+            progressBar.style.display = 'none';
+            convertBtn.disabled = false;
+            progressFill.style.width = '0%';
         }
     </script>
 </body>
