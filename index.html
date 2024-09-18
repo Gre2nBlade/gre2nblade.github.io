@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mrpack to Zip Converter</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Mrpack to Zip Converter</h1>
+        <div id="drop-area">
+            <p>Drag and drop your .mrpack file here or</p>
+            <input type="file" id="fileInput" accept=".mrpack" hidden>
+            <button id="selectFile">Select File</button>
+        </div>
+        <div id="buttons">
+            <a href="https://modrinth.com/" target="_blank" class="site-button">Modrinth</a>
+            <a href="https://www.curseforge.com/" target="_blank" class="site-button">CurseForge</a>
+        </div>
+        <button id="convertButton" disabled>Convert to Zip</button>
+        <div id="progressBar" class="progress-bar">
+            <div id="progressFill" class="progress-fill"></div>
+        </div>
+        <button id="downloadButton" disabled>Download Zip</button>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
