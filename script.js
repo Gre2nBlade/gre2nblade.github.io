@@ -1,117 +1,83 @@
-// Инициализация переменных и получение элементов DOM
-const dropArea = document.getElementById('drop-area');
-const fileInput = document.getElementById('fileInput');
-const selectFileButton = document.getElementById('selectFile');
-const convertButton = document.getElementById('convertButton');
-const downloadButton = document.getElementById('downloadButton');
-const progressBar = document.getElementById('progressFill');
+const modal = document.getElementById("loading-modal"); const progress = document.getElementById("progressFill");
+
+const fileInput = document.getElementById("fileInput"); const convertButton = document.getElementById("convertButton"); const downloadButton = document.getElementById("downloadButton");
 
 let selectedFile = null;
 
-// Обработчики событий для drag and drop
-['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-    dropArea.addEventListener(eventName, preventDefaults, false);
-});
+// Обновление имени файла и состояния кнопок
+function updateFileName() { if (selectedFile && selectedFile.name.endsWith('.mrpack')) { convertButton.disabled = false; } }
 
-function preventDefaults(e) {
-    e.preventDefault();
-    e.stopPropagation();
-}
+// Обработка выбора файла через drag-and-drop 
+unction handleFiles(files) { if (files.length > 0) { selectedFile = files[0]; if (selectedFile.name.endsWith('.mrpack')) { convertButton.disabled = false; Toastify({ text: "File selected: " + selectedFile.name, duration: 3000, gravity: "bottom", position: 'right', backgroundColor: "#30b27b" }).showToast(); } else { Toastify({ text: "Please select a .mrpack file", duration: 3000, gravity: "bottom", position: 'right', backgroundColor: "#ff6b6b" }).showToast(); } } }
 
-['dragenter', 'dragover'].forEach(eventName => {
-    dropArea.addEventListener(eventName, highlight, false);
-});
-
-['dragleave', 'drop'].forEach(eventName => {
-    dropArea.addEventListener(eventName, unhighlight, false);
-});
-
-function highlight() {
-    dropArea.classList.add('highlight');
-}
-
-function unhighlight() {
-    dropArea.classList.remove('highlight');
-}
-
-// Обработчик события drop
-dropArea.addEventListener('drop', handleDrop, false);
-
-function handleDrop(e) {
-    const dt = e.dataTransfer;
-    const files = dt.files;
-    handleFiles(files);
-}
-
-// Обработчик выбора файла через кнопку
-selectFileButton.addEventListener('click', () => fileInput.click());
-fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
-
-// Функция обработки выбранных файлов
-function handleFiles(files) {
-    if (files.length > 0) {
-        selectedFile = files[0];
-        if (selectedFile.name.endsWith('.mrpack')) {
-            convertButton.disabled = false;
-            Toastify({
-                text: "File selected: " + selectedFile.name,
-                duration: 3000,
-                gravity: "bottom",
-                position: 'right',
-                backgroundColor: "#30b27b"
-            }).showToast();
-        } else {
-            Toastify({
-                text: "Please select a .mrpack file",
-                duration: 3000,
-                gravity: "bottom",
-                position: 'right',
-                backgroundColor: "#ff6b6b"
-            }).showToast();
-        }
-    }
-}
-
-// Обработчик нажатия на кнопку конвертации
-convertButton.addEventListener('click', convertToZip);
-
-function convertToZip() {
+// Конвертация в zip 
+convertButton.addEventListener('click', function () {
     if (!selectedFile) return;
 
-    const worker = new Worker('worker.js');
-    worker.postMessage({ file: selectedFile });
+    // Показать модальное окно загрузки 
+    modal.classList.add("is-active");
 
-    worker.onmessage = function(e) {
-        if (e.data.progress) {
-            updateProgress(e.data.progress);
-        } else if (e.data.result) {
-            const blob = e.data.result;
-            downloadButton.disabled = false;
-            downloadButton.addEventListener('click', () => downloadZip(blob, 'converted.zip'));
-            Toastify({
-                text: "Conversion completed!",
-                duration: 3000,
-                gravity: "bottom",
-                position: 'right',
-                backgroundColor: "#30b27b"
-            }).showToast();
+    const newZip = new JSZip();
+
+    // Чтение и конвертация .mrpack 
+    JSZip.loadAsync(selectedFile).then(async function (zip) {
+        const manifestRaw = await zip.files['modrinth.index.json'].async('string'); const manifest = JSON.parse(manifestRaw);
+
+        // Добавление файлов
+        for (const fileName in zip.files) {
+            const file = zip.files[fileName];
+            if (file.dir) continue;
+
+            if (file.name.startsWith("overrides/") || file.name.startsWith("client-overrides/")) {
+                const properFileName = file.name.split("/").slice(1).join("/");
+                newZip.file(properFileName, file.async('blob'));
+            }
         }
-    };
-}
 
-// Функция обновления прогресс-бара
-function updateProgress(progress) {
-    progressBar.style.width = `${progress}%`;
-}
+        let totalFileSize = 0;
+        let downloaded = 0;
 
-// Функция для скачивания zip-файла
-function downloadZip(blob, fileName) {
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.style.display = 'none';
-    a.href = url;
-    a.download = fileName;
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
-}
+        for (const file of manifest.files) {
+            totalFileSize += file.fileSize;
+        }
+
+        progress.max = totalFileSize;
+
+        const filePromises = [];
+        for (const file of manifest.files) {
+            if (file.env.client !== 'required') continue;
+
+            filePromises.push(
+                fetch(file.downloads[0])
+                    .then(response => response.blob())
+                    .then(blob => {
+                        downloaded += file.fileSize;
+                        progress.style.width = `${(downloaded / totalFileSize) * 100}%`;
+                        newZip.file(file.path, blob);
+                    })
+            );
+        }
+
+        await Promise.all(filePromises);
+
+        // Генерация zip и завершение
+        newZip.generateAsync({ type: "blob" })
+            .then(content => {
+                const url = URL.createObjectURL(content);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `${manifest.name}-${manifest.versionId}.zip`;
+                a.click();
+                URL.revokeObjectURL(url);
+
+                // Скрыть модальное окно загрузки
+                modal.classList.remove("is-active");
+
+                Toastify({
+                    text: "Conversion completed!",
+                    duration: 3000,
+                    gravity: "bottom",
+                    position: 'right',
+                    backgroundColor: "#30b27b"
+                }).showToast();
+            });
