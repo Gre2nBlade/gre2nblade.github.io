@@ -1,117 +1,86 @@
-// Инициализация переменных и получение элементов DOM
-const dropArea = document.getElementById('drop-area');
-const fileInput = document.getElementById('fileInput');
-const selectFileButton = document.getElementById('selectFile');
-const convertButton = document.getElementById('convertButton');
-const downloadButton = document.getElementById('downloadButton');
-const progressBar = document.getElementById('progressFill');
+<!-- script.js -->
+// Обработаем логику для конвертации .mrpack в .zip с добавлением обработки ошибок
 
-let selectedFile = null;
+document.addEventListener('DOMContentLoaded', function () {
+    const fileInput = document.getElementById("fileInput");
+    const convertButton = document.getElementById("convertButton");
+    const downloadButton = document.getElementById("downloadButton");
+    const progressBar = document.getElementById("progressFill");
+    
+    let newZip;
+    let manifest;
 
-// Обработчики событий для drag and drop
-['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-    dropArea.addEventListener(eventName, preventDefaults, false);
-});
-
-function preventDefaults(e) {
-    e.preventDefault();
-    e.stopPropagation();
-}
-
-['dragenter', 'dragover'].forEach(eventName => {
-    dropArea.addEventListener(eventName, highlight, false);
-});
-
-['dragleave', 'drop'].forEach(eventName => {
-    dropArea.addEventListener(eventName, unhighlight, false);
-});
-
-function highlight() {
-    dropArea.classList.add('highlight');
-}
-
-function unhighlight() {
-    dropArea.classList.remove('highlight');
-}
-
-// Обработчик события drop
-dropArea.addEventListener('drop', handleDrop, false);
-
-function handleDrop(e) {
-    const dt = e.dataTransfer;
-    const files = dt.files;
-    handleFiles(files);
-}
-
-// Обработчик выбора файла через кнопку
-selectFileButton.addEventListener('click', () => fileInput.click());
-fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
-
-// Функция обработки выбранных файлов
-function handleFiles(files) {
-    if (files.length > 0) {
-        selectedFile = files[0];
-        if (selectedFile.name.endsWith('.mrpack')) {
+    // Обновляем имя файла при выборе
+    fileInput.addEventListener('change', function() {
+        if (fileInput.files.length > 0) {
             convertButton.disabled = false;
-            Toastify({
-                text: "File selected: " + selectedFile.name,
-                duration: 3000,
-                gravity: "bottom",
-                position: 'right',
-                backgroundColor: "#30b27b"
-            }).showToast();
-        } else {
-            Toastify({
-                text: "Please select a .mrpack file",
-                duration: 3000,
-                gravity: "bottom",
-                position: 'right',
-                backgroundColor: "#ff6b6b"
-            }).showToast();
+        }
+    });
+
+    // Функция для отображения ошибок
+    function showError(message) {
+        Toastify({
+            text: message,
+            duration: 3000,
+            close: true,
+            gravity: "top",
+            position: "center",
+            backgroundColor: "#ff5f5f",
+        }).showToast();
+    }
+
+    // Функция для загрузки файла и конвертации
+    async function convertFile() {
+        if (fileInput.files.length === 0) return;
+
+        try {
+            const file = fileInput.files[0];
+            const zip = await JSZip.loadAsync(file);
+            const manifestRaw = await zip.files['modrinth.index.json'].async('string');
+            manifest = JSON.parse(manifestRaw);
+            newZip = new JSZip();
+
+            let totalFileSize = 0;
+            manifest.files.forEach(file => {
+                totalFileSize += file.fileSize;
+            });
+
+            let downloaded = 0;
+
+            for (const fileIndex in manifest.files) {
+                const file = manifest.files[fileIndex];
+                if (file.env.client !== 'required') continue;
+
+                const fileData = await fetch(file.downloads[0]);
+                const blob = await fileData.blob();
+                newZip.file(file.path, blob);
+
+                downloaded += file.fileSize;
+                progressBar.style.width = `${(downloaded / totalFileSize) * 100}%`;
+            }
+
+            downloadButton.disabled = false;
+        } catch (error) {
+            showError("Failed to convert the file. Please check the .mrpack file or try again.");
+            console.error(error);
         }
     }
-}
 
-// Обработчик нажатия на кнопку конвертации
-convertButton.addEventListener('click', convertToZip);
+    // Обработчик на кнопку конвертации
+    convertButton.addEventListener('click', async () => {
+        await convertFile();
+    });
 
-function convertToZip() {
-    if (!selectedFile) return;
-
-    const worker = new Worker('worker.js');
-    worker.postMessage({ file: selectedFile });
-
-    worker.onmessage = function(e) {
-        if (e.data.progress) {
-            updateProgress(e.data.progress);
-        } else if (e.data.result) {
-            const blob = e.data.result;
-            downloadButton.disabled = false;
-            downloadButton.addEventListener('click', () => downloadZip(blob, 'converted.zip'));
-            Toastify({
-                text: "Conversion completed!",
-                duration: 3000,
-                gravity: "bottom",
-                position: 'right',
-                backgroundColor: "#30b27b"
-            }).showToast();
-        }
-    };
-}
-
-// Функция обновления прогресс-бара
-function updateProgress(progress) {
-    progressBar.style.width = `${progress}%`;
-}
-
-// Функция для скачивания zip-файла
-function downloadZip(blob, fileName) {
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.style.display = 'none';
-    a.href = url;
-    a.download = fileName;
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
-}
+    // Обработчик на кнопку скачивания
+    downloadButton.addEventListener('click', () => {
+        newZip.generateAsync({ type: "blob" })
+            .then(content => {
+                const fileName = `${manifest.name}-${manifest.versionId}.zip`;
+                saveAs(content, fileName);
+            })
+            .catch(error => {
+                showError("Failed to generate the zip file.");
+                console.error(error);
+            });
+    });
+});
