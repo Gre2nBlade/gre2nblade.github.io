@@ -212,7 +212,7 @@
         fileInput.addEventListener("change", updateFileName);
 
         // Обработчики Drag & Drop
-        ;['dragenter', 'dragover'].forEach(eventName => {
+        ['dragenter', 'dragover'].forEach(eventName => {
             dropArea.addEventListener(eventName, (e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -220,7 +220,7 @@
             }, false);
         });
 
-        ;['dragleave', 'drop'].forEach(eventName => {
+        ['dragleave', 'drop'].forEach(eventName => {
             dropArea.addEventListener(eventName, (e) => {
                 e.preventDefault();
                 e.stopPropagation();
@@ -281,9 +281,6 @@
                 }
 
                 progressFill.style.width = '0%';
-                progressFill.parentElement.style.width = '100%';
-                progressFill.parentElement.style.backgroundColor = '#f0f0f0';
-                progressFill.style.backgroundColor = '#30b27b';
 
                 const filePromises = [];
 
