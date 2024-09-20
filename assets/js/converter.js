@@ -3,6 +3,12 @@ const progress = document.getElementById("loading-progress");
 
 const fileInput = document.getElementById("file-input");
 const fileName = document.getElementById("file-name");
+const convertButton = document.querySelector("button[onclick='downloadPack()']");
+
+fileInput.addEventListener('change', function() {
+    updateFileName();
+    convertButton.disabled = fileInput.files.length <= 0;  // Активируем кнопку, если файл выбран
+});
 
 function updateFileName() {
   if (fileInput.files.length > 0) {
