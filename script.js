@@ -62,7 +62,8 @@ convertButton.addEventListener('click', function () {
     if (!selectedFile) return;
 
     const newZip = new JSZip();
-
+    // Показать модальное окно загрузки
+    modal.classList.add("is-active");
     JSZip.loadAsync(selectedFile)
         .then(async function (zip) {
             const manifestRaw = await zip.files['modrinth.index.json'].async('string');
