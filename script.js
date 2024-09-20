@@ -16,7 +16,6 @@ function preventDefaults(e) {
 }
 
 ['dragenter', 'dragover'].forEach(eventName => { dropArea.classList.add('highlight'); });
-
 ['dragleave', 'drop'].forEach(eventName => { dropArea.classList.remove('highlight'); });
 
 // Обработчик drop события 
@@ -76,7 +75,7 @@ convertButton.addEventListener('click', function () {
 
                 if (file.name.startsWith("overrides/") || file.name.startsWith("client-overrides/")) {
                     const properFileName = file.name.split("/").slice(1).join("/");
-                    newZip.file(properFileName, file.async('blob'));
+                    newZip.file(properFileName, await file.async('blob'));
                 }
             }
 
@@ -105,13 +104,7 @@ convertButton.addEventListener('click', function () {
 
             newZip.generateAsync({ type: "blob" })
                 .then(content => {
-                    const url = URL.createObjectURL(content);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `${manifest.name}-${manifest.versionId}.zip`;
-                    a.click();
-                    URL.revokeObjectURL(url);
-
+                    saveAs(content, `${manifest.name}-${manifest.versionId}.zip`);
                     modal.classList.remove("is-active");
 
                     Toastify({
