@@ -1,24 +1,29 @@
 const dropArea = document.getElementById('drop-area');
 const fileInput = document.getElementById('fileInput');
 const convertButton = document.getElementById('convertButton');
-const downloadButton = document.getElementById('downloadButton');
 const progressBar = document.getElementById('progressFill');
 const modal = document.getElementById("loading-modal");
 
 let selectedFile = null;
 
-// Обработчики событий для drag and drop 
-['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => { dropArea.addEventListener(eventName, preventDefaults, false); });
+// Обработчики событий для drag and drop
+['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+    dropArea.addEventListener(eventName, preventDefaults, false);
+});
 
+// Предотвращает стандартное поведение браузера
 function preventDefaults(e) {
     e.preventDefault();
     e.stopPropagation();
 }
 
-['dragenter', 'dragover'].forEach(eventName => { dropArea.classList.add('highlight'); });
-['dragleave', 'drop'].forEach(eventName => { dropArea.classList.remove('highlight'); });
+// Добавление и удаление класса highlight
+dropArea.addEventListener('dragenter', () => dropArea.classList.add('highlight'));
+dropArea.addEventListener('dragover', () => dropArea.classList.add('highlight'));
+dropArea.addEventListener('dragleave', () => dropArea.classList.remove('highlight'));
+dropArea.addEventListener('drop', () => dropArea.classList.remove('highlight'));
 
-// Обработчик drop события 
+// Обработчик drop события
 dropArea.addEventListener('drop', handleDrop, false);
 
 function handleDrop(e) {
@@ -27,11 +32,11 @@ function handleDrop(e) {
     handleFiles(files);
 }
 
-// Обработчик выбора файла через кнопку 
+// Обработчик выбора файла через кнопку
 document.getElementById('selectFile').addEventListener('click', () => fileInput.click());
 fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
 
-// Функция обработки выбранных файлов 
+// Функция обработки выбранных файлов
 function handleFiles(files) {
     if (files.length > 0) {
         selectedFile = files[0];
@@ -42,7 +47,7 @@ function handleFiles(files) {
                 duration: 3000,
                 gravity: "bottom",
                 position: 'right',
-                backgroundColor: "#30b27b"
+                background: "#30b27b" // Обновлено на background
             }).showToast();
         } else {
             Toastify({
@@ -50,7 +55,7 @@ function handleFiles(files) {
                 duration: 3000,
                 gravity: "bottom",
                 position: 'right',
-                backgroundColor: "#ff6b6b"
+                background: "#ff6b6b" // Обновлено на background
             }).showToast();
         }
     }
@@ -62,7 +67,7 @@ convertButton.addEventListener('click', async function () {
 
     const newZip = new JSZip();
     modal.classList.add("is-active");
-    
+
     try {
         const zip = await JSZip.loadAsync(selectedFile);
         const manifestRaw = await zip.files['modrinth.index.json'].async('string');
@@ -88,29 +93,22 @@ convertButton.addEventListener('click', async function () {
 
         progressBar.max = totalFileSize;
 
-        for (const file of manifest.files) {
-            if (file.env.client !== 'required') continue;
+        const filePromises = manifest.files.map(file => {
+            if (file.env.client !== 'required') return;
 
-            try {
-                const response = await fetch(file.downloads[0]);
-                if (!response.ok) throw new Error('Network response was not ok');
-                const blob = await response.blob();
-                downloaded += file.fileSize;
-                progressBar.style.width = `${(downloaded / totalFileSize) * 100}%`;
-                newZip.file(file.path, blob);
-            } catch (error) {
-                console.error('Failed to fetch file:', error);
-                Toastify({
-                    text: "Ошибка при загрузке файла: " + error.message,
-                    duration: 3000,
-                    gravity: "bottom",
-                    position: 'right',
-                    backgroundColor: "#ff6b6b"
-                }).showToast();
-                modal.classList.remove("is-active");
-                return; // Выход при ошибке
-            }
-        }
+            return fetch(file.downloads[0])
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.blob();
+                })
+                .then(blob => {
+                    downloaded += file.fileSize;
+                    progressBar.style.width = `${(downloaded / totalFileSize) * 100}%`;
+                    newZip.file(file.path, blob);
+                });
+        });
+
+        await Promise.all(filePromises);
 
         const content = await newZip.generateAsync({ type: "blob" });
         saveAs(content, `${manifest.name}-${manifest.versionId}.zip`);
@@ -121,18 +119,18 @@ convertButton.addEventListener('click', async function () {
             duration: 3000,
             gravity: "bottom",
             position: 'right',
-            backgroundColor: "#30b27b"
+            background: "#30b27b" // Обновлено на background
         }).showToast();
 
     } catch (error) {
-        console.error('Error during conversion:', error);
+        console.error(error);
         modal.classList.remove("is-active");
         Toastify({
-            text: "Ошибка при конвертации: " + error.message,
+            text: "Произошла ошибка: " + error.message,
             duration: 3000,
             gravity: "bottom",
             position: 'right',
-            backgroundColor: "#ff6b6b"
+            background: "#ff6b6b" // Обновлено на background
         }).showToast();
     }
 });
