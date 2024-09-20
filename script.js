@@ -61,9 +61,6 @@ function handleFiles(files) {
 convertButton.addEventListener('click', function () {
     if (!selectedFile) return;
 
-    // Показать модальное окно загрузки
-    modal.classList.add("is-active");
-
     const newZip = new JSZip();
 
     JSZip.loadAsync(selectedFile)
