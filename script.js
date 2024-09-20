@@ -56,64 +56,83 @@ function handleFiles(files) {
     }
 }
 
-// Конвертация в zip 
-convertButton.addEventListener('click', function () {
+// Конвертация в zip
+convertButton.addEventListener('click', async function () {
     if (!selectedFile) return;
 
     const newZip = new JSZip();
-    // Показать модальное окно загрузки
     modal.classList.add("is-active");
-    JSZip.loadAsync(selectedFile)
-        .then(async function (zip) {
-            const manifestRaw = await zip.files['modrinth.index.json'].async('string');
-            const manifest = JSON.parse(manifestRaw);
+    
+    try {
+        const zip = await JSZip.loadAsync(selectedFile);
+        const manifestRaw = await zip.files['modrinth.index.json'].async('string');
+        const manifest = JSON.parse(manifestRaw);
 
-            // Обработка файлов
-            for (const fileName in zip.files) {
-                const file = zip.files[fileName];
-                if (file.dir) continue;
+        // Обработка файлов
+        for (const fileName in zip.files) {
+            const file = zip.files[fileName];
+            if (file.dir) continue;
 
-                if (file.name.startsWith("overrides/") || file.name.startsWith("client-overrides/")) {
-                    const properFileName = file.name.split("/").slice(1).join("/");
-                    newZip.file(properFileName, await file.async('blob'));
-                }
+            if (file.name.startsWith("overrides/") || file.name.startsWith("client-overrides/")) {
+                const properFileName = file.name.split("/").slice(1).join("/");
+                newZip.file(properFileName, await file.async('blob'));
             }
+        }
 
-            let totalFileSize = 0;
-            let downloaded = 0;
+        let totalFileSize = 0;
+        let downloaded = 0;
 
-            manifest.files.forEach(file => {
-                totalFileSize += file.fileSize;
-            });
-
-            progressBar.max = totalFileSize;
-
-            const filePromises = manifest.files.map(file => {
-                if (file.env.client !== 'required') return;
-
-                return fetch(file.downloads[0])
-                    .then(response => response.blob())
-                    .then(blob => {
-                        downloaded += file.fileSize;
-                        progressBar.style.width = `${(downloaded / totalFileSize) * 100}%`;
-                        newZip.file(file.path, blob);
-                    });
-            });
-
-            await Promise.all(filePromises);
-
-            newZip.generateAsync({ type: "blob" })
-                .then(content => {
-                    saveAs(content, `${manifest.name}-${manifest.versionId}.zip`);
-                    modal.classList.remove("is-active");
-
-                    Toastify({
-                        text: "Конвертация завершена!",
-                        duration: 3000,
-                        gravity: "bottom",
-                        position: 'right',
-                        backgroundColor: "#30b27b"
-                    }).showToast();
-                });
+        manifest.files.forEach(file => {
+            totalFileSize += file.fileSize;
         });
+
+        progressBar.max = totalFileSize;
+
+        for (const file of manifest.files) {
+            if (file.env.client !== 'required') continue;
+
+            try {
+                const response = await fetch(file.downloads[0]);
+                if (!response.ok) throw new Error('Network response was not ok');
+                const blob = await response.blob();
+                downloaded += file.fileSize;
+                progressBar.style.width = `${(downloaded / totalFileSize) * 100}%`;
+                newZip.file(file.path, blob);
+            } catch (error) {
+                console.error('Failed to fetch file:', error);
+                Toastify({
+                    text: "Ошибка при загрузке файла: " + error.message,
+                    duration: 3000,
+                    gravity: "bottom",
+                    position: 'right',
+                    backgroundColor: "#ff6b6b"
+                }).showToast();
+                modal.classList.remove("is-active");
+                return; // Выход при ошибке
+            }
+        }
+
+        const content = await newZip.generateAsync({ type: "blob" });
+        saveAs(content, `${manifest.name}-${manifest.versionId}.zip`);
+        modal.classList.remove("is-active");
+
+        Toastify({
+            text: "Конвертация завершена!",
+            duration: 3000,
+            gravity: "bottom",
+            position: 'right',
+            backgroundColor: "#30b27b"
+        }).showToast();
+
+    } catch (error) {
+        console.error('Error during conversion:', error);
+        modal.classList.remove("is-active");
+        Toastify({
+            text: "Ошибка при конвертации: " + error.message,
+            duration: 3000,
+            gravity: "bottom",
+            position: 'right',
+            backgroundColor: "#ff6b6b"
+        }).showToast();
+    }
 });
