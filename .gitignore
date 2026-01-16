@@ -1,0 +1,19 @@
+# Игнорируем тестовые и большие файлы
+*.mrpack
+tests/
+old/
+test.html
+preview.html
+*.old.html
+*.png
+
+# Старые версии
+main-*.html
+*-old.html
+
+# Локальные файлы (если будут)
+.DS_Store
+Thumbs.db
+
+# Если есть node_modules или другие (пока не нужно)
+node_modules/

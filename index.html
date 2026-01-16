@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>Mrpack to Zip Converter</title>
-  
+
   <!-- Yandex.Metrika counter -->
   <script type="text/javascript">
     (function(m,e,t,r,i,k,a){
@@ -12,7 +12,6 @@
         for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
         k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
     })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=106290516', 'ym');
-
     ym(106290516, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", accurateTrackBounce:true, trackLinks:true});
   </script>
   <noscript><div><img src="https://mc.yandex.ru/watch/106290516" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
@@ -26,13 +25,10 @@
       font-family: "Monocraft";
       src: url("fonts/Monocraft.ttf") format("truetype");
     }
-
     * {
       box-sizing: border-box;
-      image-rendering: pixelated; /* для чёткой пиксельной анимации */
+      image-rendering: pixelated;
     }
-
-    /* ===== BASE ===== */
     body {
       margin: 0;
       min-height: 100vh;
@@ -43,47 +39,36 @@
       align-items: center;
       color: #ffffff;
     }
-
-    /* ===== CONTAINER ===== */
     .container {
       background-color: #1f1f1f;
       border: 2px solid #2e2e2e;
-      padding: 28px 28px 10px 28px; /* уменьшен padding-bottom с 28px до 16px */
+      padding: 28px 28px 10px 28px;
       width: 100%;
       max-width: 520px;
       text-align: center;
     }
-
-    /* ===== HEADER ===== */
     h1 {
       font-family: "Monocraft", monospace;
       font-size: 22px;
       margin-bottom: 20px;
     }
-
-    /* ===== DROP ===== */
     #drop-area {
       border: 2px dashed #3c8527;
       padding: 24px;
       background-color: #141414;
       cursor: pointer;
     }
-
     #drop-area.highlight {
       background-color: #1b2a1b;
     }
-
     #drop-area input {
       display: none;
     }
-
     .file-msg {
       margin-top: 12px;
       color: #7fdc5c;
       font-size: 14px;
     }
-
-    /* ===== BUTTON ===== */
     button {
       margin-top: 16px;
       width: 100%;
@@ -96,56 +81,44 @@
       font-weight: 500;
       cursor: pointer;
     }
-
     button:hover {
       background-color: #52a535;
     }
-
     button:disabled {
       background-color: #555;
       cursor: not-allowed;
     }
-
-    /* ===== FOOTER ===== */
     .footer {
-      margin-top: 16px; /* уменьшено с 24px → более компактно */
-      padding-top: 8px; /* уменьшено с 12px */
+      margin-top: 16px;
+      padding-top: 8px;
       border-top: 1px solid #2e2e2e;
       font-size: 13px;
       color: #aaaaaa;
     }
-
     .footer > div:first-child {
       margin-bottom: 6px;
     }
-
     .footer > div:last-child {
       font-size: 12px;
       opacity: 0.8;
     }
-
     .footer-links a {
       color: #7fdc5c;
       text-decoration: none;
       transition: color 0.2s ease;
     }
-
     .footer-links a:hover {
-      color: #b0ff9f; /* более светлый зелёный для эффекта осветления */
+      color: #b0ff9f;
     }
-
     .footer-links {
       text-align: center;
       margin-bottom: 6px;
     }
-
     .footer-version {
       font-size: 12px;
       opacity: 0.8;
       text-align: center;
     }
-
-    /* ===== MODAL ===== */
     .modal {
       display: none;
       position: fixed;
@@ -157,16 +130,12 @@
       transition: opacity 0.35s ease;
       opacity: 1;
     }
-
     .modal.fade-out {
       opacity: 0;
     }
-
     .modal.is-active {
       display: flex;
     }
-
-    /* ===== НОВАЯ АНИМАЦИЯ ЗАГРУЗКИ ===== */
     .loader {
       width: 160px;
       height: 160px;
@@ -175,7 +144,6 @@
       align-items: center;
       justify-content: center;
     }
-
     .grid {
       width: 120px;
       height: 120px;
@@ -184,70 +152,53 @@
       grid-template-rows: repeat(16, 1fr);
       background: #3a3a3a;
     }
-
     .cell {
       width: 100%;
       height: 100%;
       background: transparent;
     }
-
     .cell.gray {
       background: #bcbcbc;
     }
-
     .cell.green {
       background: #7DB554;
     }
-
-    /* ===== MOBILE ===== */
     @media (max-width: 600px) {
       .container {
-        padding: 18px 18px 12px 18px; /* уменьшен bottom-padding и на мобильных */
+        padding: 18px 18px 12px 18px;
       }
-
       h1 {
         font-size: 18px;
       }
-
       .loader {
         width: 140px;
         height: 140px;
       }
-
       .grid {
         width: 100px;
         height: 100px;
       }
     }
   </style>
-
-  <!-- Monocraft шрифт, если нужен -->
-  <!-- <link rel="stylesheet" href="fonts.css"> или @font-face как раньше -->
 </head>
 <body>
-
   <div class="container">
-    <h1>Mrpack to Zip Converter</h1>
-
+    <h1 data-i18n="title">Mrpack to Zip Converter</h1>
     <div id="drop-area">
-      <p>Drag & Drop .mrpack file</p>
+      <p data-i18n="drop-text">Drag & Drop .mrpack file</p>
       <input type="file" id="file-input" accept=".mrpack">
-      <button type="button" id="select-button">Select File</button>
+      <button type="button" id="select-button" data-i18n="select-button">Select File</button>
     </div>
-
-    <div id="file-name" class="file-msg">No file selected</div>
-
-    <button id="convert-button" disabled>Convert</button>
-
+    <div id="file-name" class="file-msg" data-i18n="no-file">No file selected</div>
+    <button id="convert-button" disabled data-i18n="convert">Convert</button>
     <div class="footer">
       <div class="footer-links">
-        <a href="https://modrinth.com/modpack/beautiful-optimized" target="_blank">Beautiful Optimized</a>
+        <a href="https://modrinth.com/modpack/beautiful-optimized" target="_blank" data-i18n="pack-name">Beautiful Optimized</a>
       </div>
-      <div class="footer-version">© 2026 Gre2nBlade · v2.2.3</div>
+      <div class="footer-version">© 2026 Gre2nBlade · <span id="version">v2.2.3</span></div>
     </div>
   </div>
 
-  <!-- НОВЫЙ LOADER -->
   <div id="loading-modal" class="modal">
     <div class="loader">
       <div class="grid" id="grid"></div>
@@ -258,15 +209,54 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
   <script>
-    // ─── Элементы ────────────────────────────────────────────────
-    const fileInput     = document.getElementById("file-input");
-    const fileName      = document.getElementById("file-name");
-    const selectButton  = document.getElementById("select-button");
-    const convertButton = document.getElementById("convert-button");
-    const modal         = document.getElementById("loading-modal");
-    const grid          = document.getElementById("grid");
+    // ==================== ЛОКАЛИЗАЦИЯ (русский/английский авто) ====================
+    const translations = {
+      en: {
+        title: "Mrpack to Zip Converter",
+        "drop-text": "Drag & Drop .mrpack file",
+        "select-button": "Select File",
+        "no-file": "No file selected",
+        convert: "Convert",
+        "pack-name": "Beautiful Optimized"
+      },
+      ru: {
+        title: "Mrpack to Zip Converter",
+        "drop-text": "Перетащите .mrpack файл сюда",
+        "select-button": "Выбрать файл",
+        "no-file": "Файл не выбран",
+        convert: "Конвертировать",
+        "pack-name": "Beautiful Optimized"
+      }
+    };
 
-    // ─── Drop-зона (без изменений) ───────────────────────────────
+    const lang = navigator.language.startsWith("ru") ? "ru" : "en";
+
+    document.querySelectorAll("[data-i18n]").forEach(el => {
+      const key = el.getAttribute("data-i18n");
+      if (translations[lang][key]) {
+        el.textContent = translations[lang][key];
+      }
+    });
+
+    // ==================== ДИНАМИЧЕСКАЯ ВЕРСИЯ (из build.txt) ====================
+    const MAJOR_VERSION = "2.3"; // меняй вручную при крупных обновлениях (например, на 2.3)
+
+    fetch("build.txt")
+      .then(r => r.ok ? r.text() : "3")
+      .catch(() => "3")
+      .then(build => {
+        const buildNum = build.trim() || "3";
+        document.getElementById("version").textContent = `v${MAJOR_VERSION}.${buildNum}`;
+      });
+
+    // ==================== ОСТАЛЬНОЙ КОД (без изменений) ====================
+    const fileInput = document.getElementById("file-input");
+    const fileName = document.getElementById("file-name");
+    const selectButton = document.getElementById("select-button");
+    const convertButton = document.getElementById("convert-button");
+    const modal = document.getElementById("loading-modal");
+    const grid = document.getElementById("grid");
+
     selectButton.onclick = () => fileInput.click();
 
     fileInput.onchange = () => {
@@ -277,11 +267,9 @@
     };
 
     const dropArea = document.getElementById("drop-area");
-
     ["dragenter", "dragover", "dragleave", "drop"].forEach(e => document.addEventListener(e, ev => ev.preventDefault()));
-
     ["dragenter", "dragover"].forEach(e => dropArea.addEventListener(e, () => dropArea.classList.add("highlight")));
-    ["dragleave", "drop"    ].forEach(e => dropArea.addEventListener(e, () => dropArea.classList.remove("highlight")));
+    ["dragleave", "drop"].forEach(e => dropArea.addEventListener(e, () => dropArea.classList.remove("highlight")));
 
     dropArea.addEventListener("drop", e => {
       const file = e.dataTransfer.files[0];
@@ -291,10 +279,8 @@
       convertButton.disabled = false;
     });
 
-    // ─── НОВАЯ АНИМАЦИЯ ──────────────────────────────────────────
     const SIZE = 16;
     const cells = [];
-
     for (let i = 0; i < SIZE * SIZE; i++) {
       const cell = document.createElement("div");
       cell.className = "cell";
@@ -307,7 +293,6 @@
     function generateOrder(n) {
       const center = Math.floor(n / 2);
       const result = [];
-
       for (let r = 0; r <= center; r++) {
         const ring = [];
         for (let y = 0; y < n; y++) {
@@ -317,10 +302,9 @@
             }
           }
         }
-        // shuffle внутри кольца
         for (let i = ring.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
-          [ring[i], ring[j]] = [ring[j], ring[i]];
+          [ring[i], ring[j] = [ring[j], ring[i]]];
         }
         result.push(...ring);
       }
@@ -330,21 +314,17 @@
     function setProgress(p) {
       p = Math.max(0, Math.min(1, p));
       const total = order.length;
-
-      const grayCount  = Math.floor(total * Math.min(1, p + 0.12)); // небольшой опережение серого
+      const grayCount = Math.floor(total * Math.min(1, p + 0.12));
       const greenCount = Math.floor(total * p);
 
       cells.forEach(c => c.className = "cell");
-
-      for (let i = 0; i < grayCount;  i++) cells[order[i]].classList.add("gray");
+      for (let i = 0; i < grayCount; i++) cells[order[i]].classList.add("gray");
       for (let i = 0; i < greenCount; i++) cells[order[i]].classList.add("green");
     }
 
-    // ─── КОНВЕРТАЦИЯ (только замена анимации) ────────────────────
     async function downloadPack() {
       modal.classList.add("is-active");
-      setProgress(0);           // сброс в начало
-
+      setProgress(0);
       await sleep(50);
 
       const zip = await JSZip.loadAsync(fileInput.files[0]);
@@ -358,7 +338,7 @@
 
       const CONCURRENCY = 6;
       const requiredFiles = manifest.files.filter(file => file.env?.client === "required");
-      const totalRequired = requiredFiles.length || 1; // защита от деления на 0
+      const totalRequired = requiredFiles.length || 1;
 
       let index = 0;
 
@@ -366,13 +346,11 @@
         while (index < requiredFiles.length) {
           const cur = index++;
           const file = requiredFiles[cur];
-
           try {
             const blob = await fetch(file.downloads[0]).then(r => r.blob());
             newZip.file(file.path, blob);
-
             loadedCount++;
-            setProgress(loadedCount / totalRequired);   // ← здесь обновляется прогресс
+            setProgress(loadedCount / totalRequired);
             await sleep(8);
           } catch (err) {
             console.warn(`Не удалось загрузить ${file.path}`, err);
@@ -383,18 +361,15 @@
       await Promise.all(Array(CONCURRENCY).fill().map(worker));
 
       const elapsed = performance.now() - startTime;
-      if (elapsed < minDuration) {
-        await sleep(minDuration - elapsed);
-      }
+      if (elapsed < minDuration) await sleep(minDuration - elapsed);
 
-      // Дозаполнение до 100%, если загрузилось меньше (редко)
       while (loadedCount / totalRequired < 1) {
         loadedCount = Math.min(loadedCount + 1, totalRequired);
         setProgress(loadedCount / totalRequired);
         await sleep(4);
       }
 
-      setProgress(1); // на всякий случай фиксируем 100%
+      setProgress(1);
 
       modal.classList.add("fade-out");
       await sleep(350);
@@ -410,8 +385,8 @@
 
     convertButton.onclick = downloadPack;
   </script>
-  
-  <!-- Yandex.Metrika noscript (дополнительное размещение) -->
+
+  <!-- Yandex.Metrika noscript -->
   <noscript><div><img src="https://mc.yandex.ru/watch/106290516" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
 </body>
 </html>
