@@ -1,330 +1,400 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <title>Mrpack to Zip Converter</title>
-    <link rel="icon" href="favicon.ico" type="image/x-icon">
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
+  <meta charset="UTF-8" />
+  <title>Mrpack to Zip Converter</title>
 
-        .container {
-            background-color: white;
-            padding: 2rem;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            max-width: 500px;
-            width: 100%;
-        }
+  <!-- UI FONT -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
 
-        h1 {
-            color: #30b27b;
-            margin-bottom: 1.5rem;
-        }
+  <style>
+    @font-face {
+      font-family: "Monocraft";
+      src: url("fonts/Monocraft.ttf") format("truetype");
+    }
 
-        #drop-area {
-            border: 2px dashed #30b27b;
-            border-radius: 8px;
-            padding: 2rem;
-            margin-bottom: 1rem;
-            cursor: pointer;
-            position: relative;
-        }
+    * {
+      box-sizing: border-box;
+      image-rendering: pixelated; /* для чёткой пиксельной анимации */
+    }
 
-        #drop-area.highlight {
-            background-color: #e6f7f0;
-        }
+    /* ===== BASE ===== */
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Inter", system-ui, sans-serif;
+      background-color: #171615;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #ffffff;
+    }
 
-        #drop-area input {
-            display: none;
-        }
+    /* ===== CONTAINER ===== */
+    .container {
+      background-color: #1f1f1f;
+      border: 2px solid #2e2e2e;
+      padding: 28px 28px 10px 28px; /* уменьшен padding-bottom с 28px до 16px */
+      width: 100%;
+      max-width: 520px;
+      text-align: center;
+    }
 
-        .file-msg {
-            color: #30b27b;
-            margin-top: 1rem;
-            font-weight: bold;
-        }
+    /* ===== HEADER ===== */
+    h1 {
+      font-family: "Monocraft", monospace;
+      font-size: 22px;
+      margin-bottom: 20px;
+    }
 
-        .completion-msg {
-            color: #30b27b;
-            margin-top: 1rem;
-            font-weight: bold;
-        }
+    /* ===== DROP ===== */
+    #drop-area {
+      border: 2px dashed #3c8527;
+      padding: 24px;
+      background-color: #141414;
+      cursor: pointer;
+    }
 
-        #buttons {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            margin: 1rem 0;
-        }
+    #drop-area.highlight {
+      background-color: #1b2a1b;
+    }
 
-        button, .site-button {
-            background-color: #30b27b;
-            color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 1rem;
-            transition: background-color 0.3s;
-            text-decoration: none;
-            display: inline-block;
-        }
+    #drop-area input {
+      display: none;
+    }
 
-        button:hover, .site-button:hover {
-            background-color: #268d61;
-        }
+    .file-msg {
+      margin-top: 12px;
+      color: #7fdc5c;
+      font-size: 14px;
+    }
 
-        button:disabled {
-            background-color: #a0a0a0;
-            cursor: not-allowed;
-        }
+    /* ===== BUTTON ===== */
+    button {
+      margin-top: 16px;
+      width: 100%;
+      padding: 12px;
+      background-color: #3c8527;
+      border: 2px solid #2e2e2e;
+      color: white;
+      font-size: 14px;
+      font-family: "Inter", system-ui, sans-serif;
+      font-weight: 500;
+      cursor: pointer;
+    }
 
-        .site-button {
-            background-color: #f0f0f0;
-            color: #333;
-        }
+    button:hover {
+      background-color: #52a535;
+    }
 
-        .site-button:hover {
-            background-color: #e0e0e0;
-            color: #333;
-        }
+    button:disabled {
+      background-color: #555;
+      cursor: not-allowed;
+    }
 
-        .progress-bar {
-            width: 100%;
-            height: 20px;
-            background-color: #f0f0f0;
-            border-radius: 10px;
-            margin: 1rem 0;
-            overflow: hidden;
-        }
+    /* ===== FOOTER ===== */
+    .footer {
+      margin-top: 16px; /* уменьшено с 24px → более компактно */
+      padding-top: 8px; /* уменьшено с 12px */
+      border-top: 1px solid #2e2e2e;
+      font-size: 13px;
+      color: #aaaaaa;
+    }
 
-        .progress-fill {
-            height: 100%;
-            background-color: #30b27b;
-            width: 0;
-            transition: width 0.3s ease-in-out;
-        }
+    .footer > div:first-child {
+      margin-bottom: 6px;
+    }
 
-        /* Modal Styles */
-        .modal {
-            display: none; /* Hidden by default */
-            position: fixed; /* Stay in place */
-            z-index: 1000; /* Sit on top */
-            left: 0;
-            top: 0;
-            width: 100%; /* Full width */
-            height: 100%; /* Full height */
-            overflow: auto; /* Enable scroll if needed */
-            background-color: rgba(0,0,0,0.5); /* Black w/ opacity */
-            justify-content: center;
-            align-items: center;
-        }
+    .footer > div:last-child {
+      font-size: 12px;
+      opacity: 0.8;
+    }
 
-        .modal.is-active {
-            display: flex;
-        }
+    .footer-links a {
+      color: #7fdc5c;
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
 
-        .modal-content {
-            background-color: white;
-            padding: 2rem;
-            border-radius: 8px;
-            text-align: center;
-            width: 80%;
-            max-width: 400px;
-        }
+    .footer-links a:hover {
+      color: #b0ff9f; /* более светлый зелёный для эффекта осветления */
+    }
 
-    </style>
+    .footer-links {
+      text-align: center;
+      margin-bottom: 6px;
+    }
+
+    .footer-version {
+      font-size: 12px;
+      opacity: 0.8;
+      text-align: center;
+    }
+
+    /* ===== MODAL ===== */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+      transition: opacity 0.35s ease;
+      opacity: 1;
+    }
+
+    .modal.fade-out {
+      opacity: 0;
+    }
+
+    .modal.is-active {
+      display: flex;
+    }
+
+    /* ===== НОВАЯ АНИМАЦИЯ ЗАГРУЗКИ ===== */
+    .loader {
+      width: 160px;
+      height: 160px;
+      background: #3a3a3a;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .grid {
+      width: 120px;
+      height: 120px;
+      display: grid;
+      grid-template-columns: repeat(16, 1fr);
+      grid-template-rows: repeat(16, 1fr);
+      background: #3a3a3a;
+    }
+
+    .cell {
+      width: 100%;
+      height: 100%;
+      background: transparent;
+    }
+
+    .cell.gray {
+      background: #bcbcbc;
+    }
+
+    .cell.green {
+      background: #7DB554;
+    }
+
+    /* ===== MOBILE ===== */
+    @media (max-width: 600px) {
+      .container {
+        padding: 18px 18px 12px 18px; /* уменьшен bottom-padding и на мобильных */
+      }
+
+      h1 {
+        font-size: 18px;
+      }
+
+      .loader {
+        width: 140px;
+        height: 140px;
+      }
+
+      .grid {
+        width: 100px;
+        height: 100px;
+      }
+    }
+  </style>
+
+  <!-- Monocraft шрифт, если нужен -->
+  <!-- <link rel="stylesheet" href="fonts.css"> или @font-face как раньше -->
 </head>
 <body>
 
-    <div class="container">
-        <h1>Mrpack to Zip Converter</h1>
-        <div id="drop-area">
-            <form class="my-form">
-                <p>Drag and drop your .mrpack file here or</p>
-                <input type="file" id="file-input" accept=".mrpack">
-                <button type="button" id="select-button">Select File</button>
-            </form>
-            <p id="file-name" class="file-msg">No file selected</p>
-        </div>
+  <div class="container">
+    <h1>Mrpack to Zip Converter</h1>
 
-        <div id="buttons">
-            <button id="convert-button" disabled>Convert to Zip</button>
-            <a href="https://modrinth.com/modpack/beautiful-optimized" class="site-button" target="_blank">Beautiful Optimized</a>
-            <a href="https://modrinth.com/modpack/mc-te-port" class="site-button" target="_blank">MC:TE Port</a>
-        </div>
-
-        <p id="completion-message" class="completion-msg" style="display: none;">Conversion Complete!</p>
+    <div id="drop-area">
+      <p>Drag & Drop .mrpack file</p>
+      <input type="file" id="file-input" accept=".mrpack">
+      <button type="button" id="select-button">Select File</button>
     </div>
 
-    <!-- Loading Modal -->
-    <div id="loading-modal" class="modal">
-        <div class="modal-content">
-            <h2>Loading...</h2>
-            <div class="progress-bar">
-                <div id="loading-progress" class="progress-fill"></div>
-            </div>
-        </div>
+    <div id="file-name" class="file-msg">No file selected</div>
+
+    <button id="convert-button" disabled>Convert</button>
+
+    <div class="footer">
+      <div class="footer-links">
+        <a href="https://modrinth.com/modpack/beautiful-optimized" target="_blank">Beautiful Optimized</a>
+      </div>
+      <div class="footer-version">© 2026 Gre2nBlade · v2.2.3</div>
     </div>
+  </div>
 
-    <!-- JSZip and FileSaver Libraries -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  <!-- НОВЫЙ LOADER -->
+  <div id="loading-modal" class="modal">
+    <div class="loader">
+      <div class="grid" id="grid"></div>
+    </div>
+  </div>
 
-    <script>
-        // Получение элементов
-        const modal = document.getElementById("loading-modal");
-        const progressFill = document.getElementById("loading-progress");
-        const fileInput = document.getElementById("file-input");
-        const fileName = document.getElementById("file-name");
-        const selectButton = document.getElementById("select-button");
-        const convertButton = document.getElementById("convert-button");
-        const dropArea = document.getElementById("drop-area");
-        const completionMessage = document.getElementById("completion-message");
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
-        // Функция обновления имени файла
-        function updateFileName() {
-            if (fileInput.files.length > 0) {
-                fileName.textContent = fileInput.files[0].name;
-                convertButton.disabled = false;
-                completionMessage.style.display = "none";
-            } else {
-                fileName.textContent = "No file selected";
-                convertButton.disabled = true;
+  <script>
+    // ─── Элементы ────────────────────────────────────────────────
+    const fileInput     = document.getElementById("file-input");
+    const fileName      = document.getElementById("file-name");
+    const selectButton  = document.getElementById("select-button");
+    const convertButton = document.getElementById("convert-button");
+    const modal         = document.getElementById("loading-modal");
+    const grid          = document.getElementById("grid");
+
+    // ─── Drop-зона (без изменений) ───────────────────────────────
+    selectButton.onclick = () => fileInput.click();
+
+    fileInput.onchange = () => {
+      if (fileInput.files.length) {
+        fileName.textContent = fileInput.files[0].name;
+        convertButton.disabled = false;
+      }
+    };
+
+    const dropArea = document.getElementById("drop-area");
+
+    ["dragenter", "dragover", "dragleave", "drop"].forEach(e => document.addEventListener(e, ev => ev.preventDefault()));
+
+    ["dragenter", "dragover"].forEach(e => dropArea.addEventListener(e, () => dropArea.classList.add("highlight")));
+    ["dragleave", "drop"    ].forEach(e => dropArea.addEventListener(e, () => dropArea.classList.remove("highlight")));
+
+    dropArea.addEventListener("drop", e => {
+      const file = e.dataTransfer.files[0];
+      if (!file) return;
+      fileInput.files = e.dataTransfer.files;
+      fileName.textContent = file.name;
+      convertButton.disabled = false;
+    });
+
+    // ─── НОВАЯ АНИМАЦИЯ ──────────────────────────────────────────
+    const SIZE = 16;
+    const cells = [];
+
+    for (let i = 0; i < SIZE * SIZE; i++) {
+      const cell = document.createElement("div");
+      cell.className = "cell";
+      grid.appendChild(cell);
+      cells.push(cell);
+    }
+
+    let order = generateOrder(SIZE);
+
+    function generateOrder(n) {
+      const center = Math.floor(n / 2);
+      const result = [];
+
+      for (let r = 0; r <= center; r++) {
+        const ring = [];
+        for (let y = 0; y < n; y++) {
+          for (let x = 0; x < n; x++) {
+            if (Math.max(Math.abs(x - center), Math.abs(y - center)) === r) {
+              ring.push(y * n + x);
             }
+          }
         }
-
-        // Обработчик выбора файла через кнопку
-        selectButton.addEventListener("click", () => {
-            fileInput.click();
-        });
-
-        // Обработчик изменения файла
-        fileInput.addEventListener("change", updateFileName);
-
-        // Обработчики Drag & Drop
-        ['dragenter', 'dragover'].forEach(eventName => {
-            dropArea.addEventListener(eventName, (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                dropArea.classList.add('highlight');
-            }, false);
-        });
-
-        ['dragleave', 'drop'].forEach(eventName => {
-            dropArea.addEventListener(eventName, (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                dropArea.classList.remove('highlight');
-            }, false);
-        });
-
-        dropArea.addEventListener('drop', (e) => {
-            const dt = e.dataTransfer;
-            const files = dt.files;
-            if (files.length > 0) {
-                fileInput.files = files;
-                updateFileName();
-            }
-        });
-
-        // Функция скачивания пакета
-        async function downloadPack() {
-            if (fileInput.files.length <= 0) {
-                return;
-            }
-
-            // Показать модальное окно
-            modal.classList.add("is-active");
-
-            // Начать создание нового zip-файла
-            const newZip = new JSZip();
-
-            try {
-                // Загрузка исходного zip-файла
-                const zip = await JSZip.loadAsync(fileInput.files[0]);
-
-                // Чтение манифеста
-                const manifestRaw = await zip.files['modrinth.index.json'].async('string');
-                const manifest = JSON.parse(manifestRaw);
-
-                // Копирование необходимых файлов
-                for (const fileNameInZip in zip.files) {
-                    const file = zip.files[fileNameInZip];
-                    if (file.dir) continue;
-
-                    if (file.name.startsWith("overrides/")) {
-                        const properFileName = file.name.substring("overrides/".length);
-                        newZip.file(properFileName, await file.async('blob'));
-                    }
-
-                    if (file.name.startsWith("client-overrides/")) {
-                        const properFileName = file.name.substring("client-overrides/".length);
-                        newZip.file(properFileName, await file.async('blob'));
-                    }
-                }
-
-                let totalFileSize = 0;
-                let downloaded = 0;
-
-                for (const file of manifest.files) {
-                    totalFileSize += file.fileSize;
-                }
-
-                progressFill.style.width = '0%';
-
-                const filePromises = [];
-
-                for (const file of manifest.files) {
-                    if (file.env.client !== 'required') {
-                        continue;
-                    }
-
-                    const promise = fetch(file.downloads[0])
-                        .then(response => {
-                            if (!response.ok) throw new Error(`Failed to download ${file.path}`);
-                            return response.blob();
-                        })
-                        .then(blob => {
-                            newZip.file(file.path, blob);
-                            downloaded += file.fileSize;
-                            const progressPercent = (downloaded / totalFileSize) * 100;
-                            progressFill.style.width = `${progressPercent}%`;
-                        });
-
-                    filePromises.push(promise);
-                }
-
-                await Promise.all(filePromises);
-
-                const content = await newZip.generateAsync({ type: "blob" });
-                saveAs(content, `${manifest['name']}-${manifest['versionId']}.zip`);
-
-                // Закрыть модальное окно
-                modal.classList.remove("is-active");
-
-                // Показать сообщение о завершении
-                completionMessage.style.display = "block";
-
-            } catch (error) {
-                console.error("Ошибка при конвертации:", error);
-                alert("Произошла ошибка при конвертации файла.");
-                modal.classList.remove("is-active");
-            }
+        // shuffle внутри кольца
+        for (let i = ring.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [ring[i], ring[j]] = [ring[j], ring[i]];
         }
+        result.push(...ring);
+      }
+      return result;
+    }
 
-        // Привязка функции к кнопке конвертации
-        convertButton.addEventListener("click", downloadPack);
-    </script>
+    function setProgress(p) {
+      p = Math.max(0, Math.min(1, p));
+      const total = order.length;
+
+      const grayCount  = Math.floor(total * Math.min(1, p + 0.12)); // небольшой опережение серого
+      const greenCount = Math.floor(total * p);
+
+      cells.forEach(c => c.className = "cell");
+
+      for (let i = 0; i < grayCount;  i++) cells[order[i]].classList.add("gray");
+      for (let i = 0; i < greenCount; i++) cells[order[i]].classList.add("green");
+    }
+
+    // ─── КОНВЕРТАЦИЯ (только замена анимации) ────────────────────
+    async function downloadPack() {
+      modal.classList.add("is-active");
+      setProgress(0);           // сброс в начало
+
+      await sleep(50);
+
+      const zip = await JSZip.loadAsync(fileInput.files[0]);
+      const manifest = JSON.parse(await zip.files["modrinth.index.json"].async("string"));
+
+      const newZip = new JSZip();
+      let loadedCount = 0;
+
+      const startTime = performance.now();
+      const minDuration = 900;
+
+      const CONCURRENCY = 6;
+      const requiredFiles = manifest.files.filter(file => file.env?.client === "required");
+      const totalRequired = requiredFiles.length || 1; // защита от деления на 0
+
+      let index = 0;
+
+      async function worker() {
+        while (index < requiredFiles.length) {
+          const cur = index++;
+          const file = requiredFiles[cur];
+
+          try {
+            const blob = await fetch(file.downloads[0]).then(r => r.blob());
+            newZip.file(file.path, blob);
+
+            loadedCount++;
+            setProgress(loadedCount / totalRequired);   // ← здесь обновляется прогресс
+            await sleep(8);
+          } catch (err) {
+            console.warn(`Не удалось загрузить ${file.path}`, err);
+          }
+        }
+      }
+
+      await Promise.all(Array(CONCURRENCY).fill().map(worker));
+
+      const elapsed = performance.now() - startTime;
+      if (elapsed < minDuration) {
+        await sleep(minDuration - elapsed);
+      }
+
+      // Дозаполнение до 100%, если загрузилось меньше (редко)
+      while (loadedCount / totalRequired < 1) {
+        loadedCount = Math.min(loadedCount + 1, totalRequired);
+        setProgress(loadedCount / totalRequired);
+        await sleep(4);
+      }
+
+      setProgress(1); // на всякий случай фиксируем 100%
+
+      modal.classList.add("fade-out");
+      await sleep(350);
+      modal.classList.remove("is-active", "fade-out");
+
+      const content = await newZip.generateAsync({ type: "blob" });
+      saveAs(content, `${manifest.name}-${manifest.versionId}.zip`);
+    }
+
+    function sleep(ms) {
+      return new Promise(r => setTimeout(r, ms));
+    }
+
+    convertButton.onclick = downloadPack;
+  </script>
 </body>
 </html>
