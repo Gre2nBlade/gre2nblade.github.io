@@ -1,0 +1,20 @@
+name: Increment Build Version
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  increment:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Increment build
+        run: |
+          if [ ! -f build.txt ]; then echo "0" > build.txt; fi
+          echo $(( $(cat build.txt) + 1 )) > build.txt
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add build.txt
+          git commit -m "Increment build version"
+          git push
