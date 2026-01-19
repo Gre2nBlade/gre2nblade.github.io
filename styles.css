@@ -1,0 +1,231 @@
+@font-face {
+  font-family: "Monocraft";
+  src: url("fonts/Monocraft.ttf") format("truetype");
+}
+
+* {
+  box-sizing: border-box;
+  image-rendering: pixelated;
+}
+
+:root {
+  --bg: #1f1f1f;
+  --container-bg: #1f1f1f;
+  --text: #ffffff;
+  --border: #2e2e2e;
+  --accent: #3c8527;
+  --accent-hover: #52a535;
+  --accent-light: #7fdc5c;
+  --footer-text: #aaaaaa;
+  --footer-border: #2e2e2e;
+}
+
+[data-theme="light"] {
+  --bg: #f5f5f5;
+  --container-bg: #ffffff;
+  --text: #171615;
+  --border: #dddddd;
+  --accent: #3c8527;
+  --accent-hover: #52a535;
+  --accent-light: #7fdc5c;
+  --footer-text: #666666;
+  --footer-border: #dddddd;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: "Inter", system-ui, sans-serif;
+  background-color: var(--bg);
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+main {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.container {
+  background-color: var(--container-bg);
+  border: 2px solid var(--border);
+  padding: 28px 28px 20px 28px;
+  width: 100%;
+  max-width: 520px;
+  text-align: center;
+}
+
+h1 {
+  font-family: "Monocraft", monospace;
+  font-size: 22px;
+  margin-bottom: 20px;
+}
+
+#drop-area {
+  border: 2px dashed var(--accent);
+  padding: 24px;
+  background-color: rgba(60, 133, 39, 0.1);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+#drop-area.highlight {
+  background-color: rgba(60, 133, 39, 0.2);
+}
+
+#drop-area input { display: none; }
+
+.file-msg {
+  margin-top: 12px;
+  color: var(--accent-light);
+  font-size: 14px;
+}
+
+button {
+  font-family: "Inter", system-ui, sans-serif;
+  margin-top: 16px;
+  width: 100%;
+  padding: 12px;
+  background-color: var(--accent);
+  border: 2px solid var(--border);
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+button:hover { background-color: var(--accent-hover); }
+button:disabled { background-color: #555; cursor: not-allowed; }
+
+footer {
+  border-top: 1px solid var(--footer-border);
+  padding: 12px 20px;
+  font-size: 13px;
+  color: var(--footer-text);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+footer a {
+  color: var(--accent-light);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+footer a:hover {
+  color: #b0ff9f;
+}
+
+.footer-version {
+  font-size: 13px;
+  opacity: 0.8;
+}
+
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+  transition: opacity 0.35s ease;
+  opacity: 1;
+}
+
+.modal.fade-out { opacity: 0; }
+.modal.is-active { display: flex; }
+
+.loader {
+  width: 160px;
+  height: 160px;
+  background: var(--container-bg);
+  border: 2px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.grid {
+  width: 120px;
+  height: 120px;
+  display: grid;
+  grid-template-columns: repeat(16, 1fr);
+  grid-template-rows: repeat(16, 1fr);
+  background: var(--bg);
+}
+
+.cell { background: transparent; }
+.cell.gray { background: #bcbcbc; }
+.cell.green { background: #7DB554; }
+
+/* Переключатель тем в футере справа */
+.theme-switcher {
+  position: relative;
+}
+
+.theme-toggle-btn {
+  background: none;
+  border: 2px solid var(--border);
+  color: var(--text);
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  font-size: 20px;
+  transition: all 0.2s ease;
+}
+
+.theme-toggle-btn:hover {
+  border-color: var(--accent-light);
+}
+
+.theme-menu {
+  display: none;
+  position: absolute;
+  bottom: 50px;
+  right: 0;
+  background: var(--container-bg);
+  border: 2px solid var(--border);
+  flex-direction: column;
+  min-width: 120px;
+}
+
+.theme-menu.active {
+  display: flex;
+}
+
+.theme-option {
+  background: none;
+  border: none;
+  color: var(--text);
+  padding: 10px 14px;
+  cursor: pointer;
+  text-align: left;
+  font-size: 14px;
+  transition: background 0.2s ease;
+}
+
+.theme-option:hover {
+  background: var(--accent);
+}
+
+@media (max-width: 600px) {
+  main { padding: 10px; }
+  .container { padding: 18px 18px 20px 18px; }
+  h1 { font-size: 18px; }
+  .loader { width: 140px; height: 140px; }
+  .grid { width: 100px; height: 100px; }
+  footer { padding: 12px 10px; }
+}
