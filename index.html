@@ -35,23 +35,24 @@
   </main>
 
   <footer>
-    <div class="footer-left">
+    <div>
       <a href="https://modrinth.com/modpack/beautiful-optimized" target="_blank" data-i18n="pack-name">Beautiful Optimized</a>
-    </div>
-    <div class="footer-center">
-      © 2026 <a href="https://modrinth.com/user/Gre2nBlade" target="_blank">Gre2nBlade</a> · <span id="version">v0.0.0</span>
-    </div>
-    <div class="footer-right">
-      <div class="theme-switcher">
-        <button id="theme-toggle" class="theme-toggle-btn">🌙</button>
-        <div class="theme-menu">
-          <button class="theme-option" data-theme="light">☀️ Light</button>
-          <button class="theme-option" data-theme="dark">🌙 Dark</button>
-          <button class="theme-option" data-theme="auto">🌗 Auto</button>
-        </div>
-      </div>
+      &nbsp;·&nbsp;
+      © 2026 <a href="https://modrinth.com/user/Gre2nBlade" target="_blank">Gre2nBlade</a>
+      &nbsp;·&nbsp;
+      <span id="version">v0.0.0</span>
     </div>
   </footer>
+
+  <!-- Переключатель тем в правом нижнем углу (вне футера) -->
+  <div class="theme-switcher">
+    <button id="theme-toggle" class="theme-toggle-btn">🌙</button>
+    <div class="theme-menu">
+      <button class="theme-option" data-theme="light">☀️ Light</button>
+      <button class="theme-option" data-theme="dark">🌙 Dark</button>
+      <button class="theme-option" data-theme="auto">🌗 Auto</button>
+    </div>
+  </div>
 
   <div id="loading-modal" class="modal">
     <div class="loader">
