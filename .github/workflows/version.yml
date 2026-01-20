@@ -4,17 +4,28 @@ on:
   push:
     branches: [ main ]
 
+# Предотвращаем параллельные запуски и циклы
+concurrency:
+  group: build-version
+  cancel-in-progress: true
+
+permissions:
+  contents: write  # обязательно для push от Actions
+
 jobs:
   increment:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # важно для правильного push
+
       - name: Increment build
         run: |
           if [ ! -f build.txt ]; then echo "0" > build.txt; fi
           echo $(( $(cat build.txt) + 1 )) > build.txt
-          git config user.name "github-actions"
-          git config user.email "actions@github.com"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add build.txt
-          git commit -m "Increment build version"
-          git push
+          git commit -m "Increment build version [skip ci]" || echo "No changes to commit"
+          git push origin main || echo "Push failed (protected branch?)"
