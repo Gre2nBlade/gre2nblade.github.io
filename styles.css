@@ -161,6 +161,8 @@ footer a:hover {
   border: 2px solid var(--border);
   flex-direction: column;
   box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  padding: 6px 0;          /* небольшое расстояние от верхней/нижней границы меню */
+  gap: 4px;                /* небольшое расстояние между кнопками */
 }
 
 .theme-menu.active {
@@ -171,16 +173,17 @@ footer a:hover {
   background: none;
   border: none;
   color: var(--text);
-  padding: 10px 14px;
+  padding: 8px 16px;       /* чуть компактнее, но с комфортными боковыми отступами */
   cursor: pointer;
   text-align: left;
   font-size: 14px;
-  width: 130px;
+  width: 100%;             /* кнопка занимает всю ширину меню */
   transition: background 0.2s ease;
 }
 
 .theme-option:hover {
   background-color: var(--accent);
+  color: white;            /* белый текст при наведении для лучшей читаемости */
 }
 
 @media (max-width: 600px) {
