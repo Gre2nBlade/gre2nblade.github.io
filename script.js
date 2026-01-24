@@ -34,7 +34,7 @@ fetch("build.txt")
     document.getElementById("version").textContent = `v${MAJOR_VERSION}.${buildNum}`;
   });
 
-// Тумблер тем
+// Тумблер тем (новая реализация)
 const themeCheckbox = document.getElementById("theme-checkbox");
 
 function applyInitialTheme() {
