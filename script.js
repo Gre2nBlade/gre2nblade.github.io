@@ -55,6 +55,11 @@ function applyTheme(theme) {
     updateToggleIcon(theme);
   }
   localStorage.setItem("theme", theme);
+
+  // Подсветка выбранной опции галочкой
+  themeOptions.forEach(option => {
+    option.classList.toggle("selected", option.dataset.theme === theme);
+  });
 }
 
 const savedTheme = localStorage.getItem("theme") || "auto";
