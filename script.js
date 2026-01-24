@@ -34,56 +34,36 @@ fetch("build.txt")
     document.getElementById("version").textContent = `v${MAJOR_VERSION}.${buildNum}`;
   });
 
-// Темы
-const themeToggle = document.getElementById("theme-toggle");
-const themeMenu = document.querySelector(".theme-menu");
-const themeOptions = document.querySelectorAll(".theme-option");
+// Тумблер тем
+const themeCheckbox = document.getElementById("theme-checkbox");
 
-function updateToggleIcon(theme) {
-  if (theme === "light") themeToggle.textContent = "☀️";
-  else if (theme === "dark") themeToggle.textContent = "🌙";
-  else themeToggle.textContent = "🌗";
-}
+function applyInitialTheme() {
+  let savedTheme = localStorage.getItem("theme");
+  let currentTheme;
 
-function applyTheme(theme) {
-  if (theme === "auto") {
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    document.documentElement.setAttribute("data-theme", prefersDark ? "dark" : "light");
-    updateToggleIcon("auto");
+  if (savedTheme) {
+    currentTheme = savedTheme;
   } else {
-    document.documentElement.setAttribute("data-theme", theme);
-    updateToggleIcon(theme);
+    currentTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
   }
-  localStorage.setItem("theme", theme);
 
-  // Подсветка выбранной опции галочкой
-  themeOptions.forEach(option => {
-    option.classList.toggle("selected", option.dataset.theme === theme);
-  });
+  document.documentElement.setAttribute("data-theme", currentTheme);
+  themeCheckbox.checked = (currentTheme === "dark");
 }
 
-const savedTheme = localStorage.getItem("theme") || "auto";
-applyTheme(savedTheme);
+applyInitialTheme();
 
-themeToggle.addEventListener("click", () => {
-  themeMenu.classList.toggle("active");
+themeCheckbox.addEventListener("change", () => {
+  const theme = themeCheckbox.checked ? "dark" : "light";
+  document.documentElement.setAttribute("data-theme", theme);
+  localStorage.setItem("theme", theme);
 });
 
-themeOptions.forEach(option => {
-  option.addEventListener("click", () => {
-    applyTheme(option.dataset.theme);
-    themeMenu.classList.remove("active");
-  });
-});
-
-window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
-  if (localStorage.getItem("theme") === "auto") applyTheme("auto");
-});
-
-// Закрытие меню при клике вне
-document.addEventListener("click", (e) => {
-  if (!themeToggle.contains(e.target) && !themeMenu.contains(e.target)) {
-    themeMenu.classList.remove("active");
+window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (e) => {
+  if (!localStorage.getItem("theme")) {
+    const theme = e.matches ? "dark" : "light";
+    document.documentElement.setAttribute("data-theme", theme);
+    themeCheckbox.checked = e.matches;
   }
 });
 

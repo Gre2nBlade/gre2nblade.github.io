@@ -9,7 +9,6 @@
 }
 
 :root {
-  --menu-hover-bg: #2e2e2e; /* тёмная тема */
   --bg: #1f1f1f;
   --container-bg: #1f1f1f;
   --text: #ffffff;
@@ -22,7 +21,6 @@
 }
 
 [data-theme="light"] {
-  --menu-hover-bg: #e8e8e8; /* светлая тема */
   --bg: #f5f5f5;
   --container-bg: #ffffff;
   --text: #171615;
@@ -108,11 +106,11 @@ button {
 button:hover { background-color: var(--accent-hover); }
 button:disabled { background-color: #555; cursor: not-allowed; }
 
-/* Футер — теперь компактный и с явным фоном */
+/* Футер */
 footer {
-  background-color: var(--container-bg); /* добавлено — чтобы не сливался с body в light */
+  background-color: var(--container-bg);
   border-top: 1px solid var(--footer-border);
-  padding: 10px 20px; /* уменьшено с 12px для компактности */
+  padding: 10px 20px;
   font-size: 13px;
   color: var(--footer-text);
   text-align: center;
@@ -128,6 +126,7 @@ footer a:hover {
   color: #b0ff9f;
 }
 
+/* Тумблер тем */
 .theme-switcher {
   position: fixed;
   bottom: 20px;
@@ -135,93 +134,83 @@ footer a:hover {
   z-index: 1000;
 }
 
-.theme-toggle-btn {
-  background-color: var(--container-bg);
-  border: 2px solid var(--border);
-  color: var(--text);
-  width: 40px;
-  height: 40px;
-  border-radius: 0;
+.theme-toggle {
   cursor: pointer;
-  font-size: 20px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-  transition: all 0.2s ease;
+  width: 64px;
+  height: 36px;
+  position: relative;
+  display: block;
 }
 
-.theme-toggle-btn:hover {
-  border-color: var(--accent-light);
-  transform: scale(1.05);
-}
-
-.theme-menu {
+#theme-checkbox {
   display: none;
+}
+
+.toggle-slider {
   position: absolute;
-  bottom: 50px;
-  right: 0;
+  top: 0;
+  left: 0;
+  width: 64px;
+  height: 36px;
   background-color: var(--container-bg);
   border: 2px solid var(--border);
-  flex-direction: column;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-  border-radius: 0; /* прямые углы */
-  padding: 6px 0;   /* небольшие отступы сверху/снизу */
-  min-width: 160px; /* чтобы меню не было слишком узким */
-}
-
-.theme-menu.active {
-  display: flex;
-}
-
-.theme-option {
+  transition: border-color 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   display: flex;
   align-items: center;
-  gap: 12px;
-  background: none;
-  border: none;
-  color: var(--text);
-  padding: 10px 16px;
-  cursor: pointer;
-  font-size: 14px;
-  width: 100%;
-  transition: background-color 0.2s ease;
+  justify-content: space-between;
+  padding: 0 8px;
+  overflow: hidden;
 }
 
-.theme-option:hover {
-  background-color: var(--menu-hover-bg); /* серый hover */
+.toggle-slider:hover {
+  border-color: var(--accent-light);
 }
 
-.theme-icon {
-  font-size: 18px;
-  width: 24px;
-  text-align: center;
+.toggle-slider::before {
+  content: "";
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  left: 4px;
+  top: 4px;
+  background-color: var(--accent);
+  transition: transform 0.3s ease, background-color 0.3s ease;
+  z-index: 1;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
 
-.theme-label {
-  flex: 1;
-  text-align: left;
+#theme-checkbox:checked + .toggle-slider::before {
+  transform: translateX(28px);
 }
 
-.theme-check {
-  margin-left: auto;
-  opacity: 0;
-  font-size: 18px;
-  font-weight: bold;
-  color: var(--accent-light);
-  transition: opacity 0.2s ease;
+.toggle-icon {
+  position: absolute;
+  font-size: 20px;
+  transition: opacity 0.3s ease;
+  z-index: 2;
+  pointer-events: none;
 }
 
-.theme-option.selected .theme-check {
+.toggle-icon.sun {
+  left: 10px;
   opacity: 1;
 }
 
-/* Переменная для серого hover в обеих темах */
-:root {
-  --menu-hover-bg: #2e2e2e; /* тёмная тема */
+.toggle-icon.moon {
+  right: 10px;
+  opacity: 0;
 }
 
-[data-theme="light"] {
-  --menu-hover-bg: #e8e8e8; /* светлая тема */
+#theme-checkbox:checked + .toggle-slider .sun {
+  opacity: 0;
 }
 
+#theme-checkbox:checked + .toggle-slider .moon {
+  opacity: 1;
+}
+
+/* Адаптивность */
 @media (max-width: 600px) {
   main { padding: 10px; }
   .container { padding: 18px 18px 20px 18px; }
@@ -229,7 +218,34 @@ footer a:hover {
   .loader { width: 140px; height: 140px; }
   .grid { width: 100px; height: 100px; }
   footer { padding: 10px; }
-  .theme-switcher { bottom: 10px; right: 10px; }
+
+  .theme-switcher {
+    bottom: 10px;
+    right: 10px;
+  }
+  .theme-toggle {
+    width: 56px;
+    height: 32px;
+  }
+  .toggle-slider {
+    width: 56px;
+    height: 32px;
+    padding: 0 6px;
+  }
+  .toggle-slider::before {
+    width: 24px;
+    height: 24px;
+    left: 4px;
+    top: 4px;
+  }
+  #theme-checkbox:checked + .toggle-slider::before {
+    transform: translateX(24px);
+  }
+  .toggle-icon {
+    font-size: 18px;
+  }
+  .toggle-icon.sun { left: 8px; }
+  .toggle-icon.moon { right: 8px; }
 }
 
 .modal {

@@ -44,26 +44,14 @@
     </div>
   </footer>
 
-  <!-- Переключатель тем в правом нижнем углу (вне футера) -->
   <div class="theme-switcher">
-    <button id="theme-toggle" class="theme-toggle-btn">🌙</button>
-    <div class="theme-menu">
-      <button class="theme-option" data-theme="light">
-        <span class="theme-icon">☀️</span>
-        <span class="theme-label">Светлая</span>
-        <span class="theme-check">✓</span>
-      </button>
-      <button class="theme-option" data-theme="dark">
-        <span class="theme-icon">🌙</span>
-        <span class="theme-label">Тёмная</span>
-        <span class="theme-check">✓</span>
-      </button>
-      <button class="theme-option" data-theme="auto">
-        <span class="theme-icon">🌗</span>
-        <span class="theme-label">Системная</span>
-        <span class="theme-check">✓</span>
-      </button>
-    </div>
+    <label class="theme-toggle">
+      <input type="checkbox" id="theme-checkbox">
+      <span class="toggle-slider">
+        <span class="toggle-icon sun">☀️</span>
+        <span class="toggle-icon moon">🌙</span>
+      </span>
+    </label>
   </div>
 
   <div id="loading-modal" class="modal">
