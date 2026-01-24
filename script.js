@@ -34,11 +34,11 @@ fetch("build.txt")
     document.getElementById("version").textContent = `v${MAJOR_VERSION}.${buildNum}`;
   });
 
-// Тумблер тем (новая реализация)
-const themeCheckbox = document.getElementById("theme-checkbox");
+// Новый тумблер тем
+const themeSwitch = document.getElementById("theme-switch");
 
 function applyInitialTheme() {
-  let savedTheme = localStorage.getItem("theme");
+  const savedTheme = localStorage.getItem("theme");
   let currentTheme;
 
   if (savedTheme) {
@@ -48,13 +48,17 @@ function applyInitialTheme() {
   }
 
   document.documentElement.setAttribute("data-theme", currentTheme);
-  themeCheckbox.checked = (currentTheme === "dark");
+  themeSwitch.classList.toggle("switch-on", currentTheme === "dark");
 }
 
 applyInitialTheme();
 
-themeCheckbox.addEventListener("change", () => {
-  const theme = themeCheckbox.checked ? "dark" : "light";
+themeSwitch.addEventListener("click", () => {
+  themeSwitch.classList.toggle("switch-on");
+
+  const isDark = themeSwitch.classList.contains("switch-on");
+  const theme = isDark ? "dark" : "light";
+
   document.documentElement.setAttribute("data-theme", theme);
   localStorage.setItem("theme", theme);
 });
@@ -63,7 +67,7 @@ window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (e)
   if (!localStorage.getItem("theme")) {
     const theme = e.matches ? "dark" : "light";
     document.documentElement.setAttribute("data-theme", theme);
-    themeCheckbox.checked = e.matches;
+    themeSwitch.classList.toggle("switch-on", e.matches);
   }
 });
 
