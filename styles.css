@@ -141,9 +141,13 @@ footer a:hover {
   width: 44px;
   height: 24px;
   background: var(--border);
+  /*
   border: 2px solid var(--border);
+  */
   cursor: pointer;
+  /*
   transition: background 0.3s ease;
+  */
   box-shadow: none; /* плоский, без тени */
 }
 
