@@ -130,7 +130,7 @@ footer a:hover {
 /* Тумблер тем с иконками */
 .theme-switcher {
   position: absolute;
-  right: 12px; /* чуть отступ от края */
+  right: 12px;
   top: 50%;
   transform: translateY(-50%);
   z-index: 10;
@@ -142,9 +142,9 @@ footer a:hover {
   height: 24px;
   background: var(--border);
   cursor: pointer;
-  transition: background 0.3s ease; /* плавная смена фона */
+  transition: background 0.3s ease;
   box-shadow: none;
-  position: relative; /* для иконок */
+  position: relative;
 }
 
 .switch-btn::after {
@@ -168,7 +168,7 @@ footer a:hover {
   left: 23px;
 }
 
-/* Иконки солнца и луны */
+/* Иконки — точное центрирование в своих зонах */
 .theme-icon {
   position: absolute;
   top: 50%;
@@ -182,16 +182,15 @@ footer a:hover {
 }
 
 .theme-icon.sun {
-  left: 4px;
-  opacity: 1; /* видно в светлой теме */
+  left: 6px;   /* точный центр левой половины */
+  opacity: 1;
 }
 
 .theme-icon.moon {
-  right: 4px;
+  right: 6px;  /* точный центр правой половины */
   opacity: 0;
 }
 
-/* Переключение видимости иконок */
 .switch-btn.switch-on .sun {
   opacity: 0;
 }
@@ -229,8 +228,12 @@ footer a:hover {
     width: 14px;
     height: 14px;
   }
-  .theme-icon.sun { left: 3px; }
-  .theme-icon.moon { right: 3px; }
+  .theme-icon.sun {
+    left: 5px;
+  }
+  .theme-icon.moon {
+    right: 5px;
+  }
 }
 
 .modal {
