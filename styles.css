@@ -108,6 +108,7 @@ button:disabled { background-color: #555; cursor: not-allowed; }
 
 /* Футер */
 footer {
+  position: relative; /* для absolute позиционирования тумблера внутри */
   background-color: var(--container-bg);
   border-top: 1px solid var(--footer-border);
   padding: 10px 20px;
@@ -126,35 +127,35 @@ footer a:hover {
   color: #b0ff9f;
 }
 
-/* Новый тумблер тем (по твоему примеру) */
+/* Тумблер тем (уменьшенный, в футере) */
 .theme-switcher {
-  position: fixed;
-  bottom: 20px;
+  position: absolute;
   right: 20px;
-  z-index: 1000;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
 }
 
 .switch-btn {
   display: inline-block;
-  width: 72px;
-  height: 38px;
-  background: var(--border);    /* off — серый */
+  width: 56px;
+  height: 30px;
+  background: var(--border);
   border: 2px solid var(--border);
   cursor: pointer;
-  transition: background 0.3s ease, border-color 0.2s ease;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
 }
 
-/*
 .switch-btn:hover {
-  border-color: var(--accent-light);
+  transform: scale(1.05);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
 }
-*/
 
 .switch-btn::after {
   content: "";
-  height: 32px;
-  width: 32px;
+  height: 24px;
+  width: 24px;
   background: #fff;
   top: 3px;
   left: 3px;
@@ -165,11 +166,11 @@ footer a:hover {
 }
 
 .switch-btn.switch-on {
-  background: var(--accent);    /* on — зелёный */
+  background: var(--accent);
 }
 
 .switch-btn.switch-on::after {
-  left: 37px;
+  left: 29px; /* 56 - 24 - 3 = 29 */
 }
 
 /* Адаптивность */
@@ -182,21 +183,18 @@ footer a:hover {
   footer { padding: 10px; }
 
   .theme-switcher {
-    bottom: 10px;
     right: 10px;
   }
   .switch-btn {
-    width: 62px;
-    height: 34px;
+    width: 50px;
+    height: 28px;
   }
   .switch-btn::after {
-    width: 28px;
-    height: 28px;
-    top: 3px;
-    left: 3px;
+    width: 22px;
+    height: 22px;
   }
   .switch-btn.switch-on::after {
-    left: 31px;
+    left: 25px;
   }
 }
 
