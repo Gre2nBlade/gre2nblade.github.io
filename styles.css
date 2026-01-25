@@ -127,10 +127,10 @@ footer a:hover {
   color: #b0ff9f;
 }
 
-/* Тумблер тем с иконками (улучшенный дизайн) */
+/* Тумблер тем с центральной иконкой */
 .theme-switcher {
   position: absolute;
-  right: 7px; /* отступ от края */
+  right: 7px;
   top: 54%;
   transform: translateY(-50%);
   z-index: 10;
@@ -145,7 +145,7 @@ footer a:hover {
   transition: background 0.3s ease;
   box-shadow: none;
   position: relative;
-  overflow: hidden; /* чтобы иконки не вылезали */
+  overflow: hidden;
 }
 
 .switch-btn::after {
@@ -157,8 +157,9 @@ footer a:hover {
   left: 3px;
   position: absolute;
   transition: left 0.3s ease;
-  z-index: 3; /* кнопка поверх иконок */
+  z-index: 3;
   box-shadow: none;
+  border-radius: 9px;
 }
 
 .switch-btn.switch-on {
@@ -169,50 +170,30 @@ footer a:hover {
   left: 23px;
 }
 
-/* Иконки — фиксированные, всегда видимы, меняется яркость через data-theme */
+/* Иконки — одна в центре, динамическая замена через opacity */
 .theme-icon {
   position: absolute;
+  left: 50%;
   top: 50%;
-  transform: translateY(-50%);
+  transform: translate(-50%, -50%);
   width: 16px;
   height: 16px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
   pointer-events: none;
-  z-index: 2; /* под кнопкой */
+  z-index: 2;
 }
 
-/* Центрирование иконок */
 .theme-icon.sun {
-  left: 6px;
+  opacity: 1; /* солнце по умолчанию (light) */
 }
 
-.theme-icon.moon {
-  right: 6px;
+.switch-btn.switch-on .sun {
+  opacity: 0;
 }
 
-/* Цвета солнца */
-[data-theme="light"] .sun path {
-  fill: #FFAA00; /* яркое в светлой теме */
-}
-
-[data-theme="dark"] .sun path {
-  fill: #888888; /* тусклое в тёмной */
-}
-
-/* Цвета луны */
-[data-theme="light"] .moon path:first-child {
-  fill: #888888; /* тусклая основа в светлой */
-}
-
-[data-theme="light"] .moon path:last-child {
-  fill: #666666; /* тусклые кратеры */
-}
-
-[data-theme="dark"] .moon path:first-child {
-  fill: #EEEEEE; /* яркая основа в тёмной */
-}
-
-[data-theme="dark"] .moon path:last-child {
-  fill: #CCCCCC; /* яркие кратеры */
+.switch-btn.switch-on .moon {
+  opacity: 1;
 }
 
 /* Адаптивность */
@@ -230,10 +211,12 @@ footer a:hover {
   .switch-btn {
     width: 40px;
     height: 22px;
+    border-radius: 11px;
   }
   .switch-btn::after {
     width: 16px;
     height: 16px;
+    border-radius: 8px;
   }
   .switch-btn.switch-on::after {
     left: 21px;
@@ -241,12 +224,6 @@ footer a:hover {
   .theme-icon {
     width: 14px;
     height: 14px;
-  }
-  .theme-icon.sun {
-    left: 5px;
-  }
-  .theme-icon.moon {
-    right: 5px;
   }
 }
 
