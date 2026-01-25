@@ -130,7 +130,7 @@ footer a:hover {
 /* Тумблер тем с иконками (улучшенный дизайн) */
 .theme-switcher {
   position: absolute;
-  right: 6px; /* отступ от края */
+  right: 7px; /* отступ от края */
   top: 54%;
   transform: translateY(-50%);
   z-index: 10;
