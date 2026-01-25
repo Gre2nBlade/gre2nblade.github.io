@@ -130,8 +130,8 @@ footer a:hover {
 /* Тумблер тем (ещё меньше, без эффектов) */
 .theme-switcher {
   position: absolute;
-  right: 20px;
-  top: 50%;
+  right: 6px;
+  top: 54%;
   transform: translateY(-50%);
   z-index: 10;
 }
