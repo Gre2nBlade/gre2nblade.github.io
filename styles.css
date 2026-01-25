@@ -142,7 +142,6 @@ footer a:hover {
   height: 24px;
   background: var(--border);
   cursor: pointer;
-  transition: background 0.3s ease;
   box-shadow: none;
   position: relative;
   overflow: hidden;
@@ -159,7 +158,6 @@ footer a:hover {
   transition: left 0.3s ease;
   z-index: 3;
   box-shadow: none;
-  border-radius: 9px;
 }
 
 .switch-btn.switch-on {
@@ -179,7 +177,6 @@ footer a:hover {
   width: 16px;
   height: 16px;
   opacity: 0;
-  transition: opacity 0.3s ease;
   pointer-events: none;
   z-index: 2;
 }
