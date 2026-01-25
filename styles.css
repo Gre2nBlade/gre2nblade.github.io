@@ -108,7 +108,7 @@ button:disabled { background-color: #555; cursor: not-allowed; }
 
 /* Футер */
 footer {
-  position: relative; /* для absolute тумблера */
+  position: relative;
   background-color: var(--container-bg);
   border-top: 1px solid var(--footer-border);
   padding: 10px 20px;
@@ -127,11 +127,11 @@ footer a:hover {
   color: #b0ff9f;
 }
 
-/* Тумблер тем (ещё меньше, без эффектов) */
+/* Тумблер тем с иконками */
 .theme-switcher {
   position: absolute;
-  right: 6px;
-  top: 54%;
+  right: 12px; /* чуть отступ от края */
+  top: 50%;
   transform: translateY(-50%);
   z-index: 10;
 }
@@ -141,14 +141,10 @@ footer a:hover {
   width: 44px;
   height: 24px;
   background: var(--border);
-  /*
-  border: 2px solid var(--border);
-  */
   cursor: pointer;
-  /*
-  transition: background 0.3s ease;
-  */
-  box-shadow: none; /* плоский, без тени */
+  transition: background 0.3s ease; /* плавная смена фона */
+  box-shadow: none;
+  position: relative; /* для иконок */
 }
 
 .switch-btn::after {
@@ -161,7 +157,7 @@ footer a:hover {
   position: absolute;
   transition: left 0.3s ease;
   z-index: 1;
-  box-shadow: none; /* без тени на кнопке */
+  box-shadow: none;
 }
 
 .switch-btn.switch-on {
@@ -169,7 +165,39 @@ footer a:hover {
 }
 
 .switch-btn.switch-on::after {
-  left: 23px; /* 44 - 18 - 3 = 23 */
+  left: 23px;
+}
+
+/* Иконки солнца и луны */
+.theme-icon {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.theme-icon.sun {
+  left: 4px;
+  opacity: 1; /* видно в светлой теме */
+}
+
+.theme-icon.moon {
+  right: 4px;
+  opacity: 0;
+}
+
+/* Переключение видимости иконок */
+.switch-btn.switch-on .sun {
+  opacity: 0;
+}
+
+.switch-btn.switch-on .moon {
+  opacity: 1;
 }
 
 /* Адаптивность */
@@ -182,7 +210,7 @@ footer a:hover {
   footer { padding: 10px; }
 
   .theme-switcher {
-    right: 10px;
+    right: 8px;
   }
   .switch-btn {
     width: 40px;
@@ -195,8 +223,14 @@ footer a:hover {
     left: 3px;
   }
   .switch-btn.switch-on::after {
-    left: 21px; /* 40 - 16 - 3 = 21 */
+    left: 21px;
   }
+  .theme-icon {
+    width: 14px;
+    height: 14px;
+  }
+  .theme-icon.sun { left: 3px; }
+  .theme-icon.moon { right: 3px; }
 }
 
 .modal {
