@@ -162,7 +162,7 @@ footer a:hover {
   background-image: url("icons/sun.webp");
   background-repeat: no-repeat;
   background-position: center;
-  background-size: 27px 27px;
+  background-size: 24px 24px;
 }
 
 .switch-btn.switch-on::after {
