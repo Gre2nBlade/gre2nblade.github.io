@@ -159,7 +159,7 @@ footer a:hover {
   transition: left 0.3s ease;
 
   /* PNG иконка */
-  background-image: url("icons/sun_n.png");
+  background-image: url("icons/sun.webp");
   background-repeat: no-repeat;
   background-position: center;
   background-size: 18px 18px;
@@ -168,7 +168,7 @@ footer a:hover {
 .switch-btn.switch-on::after {
   left: 23px;
 
-  background-image: url("icons/moon_n.png");
+  background-image: url("icons/moon.webp");
 }
 
 /* Иконки — одна в центре, динамическая замена через opacity */
