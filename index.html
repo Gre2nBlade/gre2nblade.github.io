@@ -2,19 +2,20 @@
 <html lang="ru" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
-  <title>Mrpack to Zip Converter</title>
+  <title>Tools</title>
 
   <!-- Yandex.Metrika counter -->
   <script type="text/javascript">
-    (function(m,e,t,r,i,k,a){
-        m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
-        m[i].l=1*new Date();
-        for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
-        k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
-    })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=106290516', 'ym');
-    ym(106290516, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", accurateTrackBounce:true, trackLinks:true});
+      (function(m,e,t,r,i,k,a){
+          m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+          m[i].l=1*new Date();
+          for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+          k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
+      })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=106584483', 'ym');
+
+      ym(106584483, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", referrer: document.referrer, url: location.href, accurateTrackBounce:true, trackLinks:true});
   </script>
-  <noscript><div><img src="https://mc.yandex.ru/watch/106290516" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+  <noscript><div><img src="https://mc.yandex.ru/watch/106584483" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
   <!-- /Yandex.Metrika counter -->
 
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -23,14 +24,146 @@
 <body>
   <main>
     <div class="container">
-      <h1 data-i18n="title">Mrpack to Zip Converter</h1>
-      <div id="drop-area">
-        <p data-i18n="drop-text">Перетащите .mrpack файл сюда</p>
-        <input type="file" id="file-input" accept=".mrpack">
-        <button type="button" id="select-button" data-i18n="select-button">Выбрать файл</button>
+      <h1 id="page-title" data-i18n="title">Tools</h1>
+
+      <!-- Tabs -->
+      <div class="tabs" role="tablist" aria-label="Tools">
+        <button class="tab-btn tab-active" id="tab-converter" role="tab" aria-selected="true" data-i18n="tab-converter">
+          Converter
+        </button>
+        <button class="tab-btn" id="tab-skin" role="tab" aria-selected="false" data-i18n="tab-skin">
+          Skin Editor
+        </button>
       </div>
-      <div id="file-name" class="file-msg" data-i18n="no-file">Файл не выбран</div>
-      <button id="convert-button" disabled data-i18n="convert">Конвертировать</button>
+
+      <!-- ===================== -->
+      <!-- Converter panel -->
+      <!-- ===================== -->
+      <section id="panel-converter" class="tab-panel tab-panel-active" role="tabpanel">
+        <div id="drop-area">
+          <p data-i18n="drop-text">Перетащите .mrpack файл сюда</p>
+          <input type="file" id="file-input" accept=".mrpack">
+          <button type="button" id="select-button" data-i18n="select-button">Выбрать файл</button>
+        </div>
+        <div id="file-name" class="file-msg" data-i18n="no-file">Файл не выбран</div>
+        <button id="convert-button" disabled data-i18n="convert">Конвертировать</button>
+      </section>
+
+      <!-- ===================== -->
+      <!-- Skin Editor panel -->
+      <!-- ===================== -->
+      <section id="panel-skin" class="tab-panel" role="tabpanel">
+        <div class="skin-layout">
+          <!-- Tools -->
+          <div class="skin-tools">
+            <div class="skin-group-title" data-i18n="skin-tools">Tools</div>
+
+            <button class="tool-btn tool-active" data-tool="brush" title="Brush (B)">
+              ✏️ <span>Brush</span><span class="kbd">B</span>
+            </button>
+            <button class="tool-btn" data-tool="eraser" title="Eraser (E)">
+              🩹 <span>Eraser</span><span class="kbd">E</span>
+            </button>
+            <button class="tool-btn" data-tool="picker" title="Eyedropper (I)">
+              🧪 <span>Picker</span><span class="kbd">I</span>
+            </button>
+            <button class="tool-btn" data-tool="fill" title="Fill (G)">
+              🎨 <span>Fill</span><span class="kbd">G</span>
+            </button>
+
+            <div class="skin-divider"></div>
+
+            <button class="tool-btn" id="btn-undo" title="Undo (Ctrl+Z)">
+              ↶ <span>Undo</span><span class="kbd">Ctrl Z</span>
+            </button>
+            <button class="tool-btn" id="btn-redo" title="Redo (Ctrl+Y / Ctrl+Shift+Z)">
+              ↷ <span>Redo</span><span class="kbd">Ctrl Y</span>
+            </button>
+
+            <div class="skin-divider"></div>
+
+            <button class="tool-btn" id="btn-layer" title="Toggle Layer (L)">
+              🧩 <span id="layer-label">Base</span><span class="kbd">L</span>
+            </button>
+
+            <div class="skin-divider"></div>
+
+            <button class="tool-btn" id="btn-reset-view" title="Reset View (R)">
+              🔄 <span>Reset 3D</span><span class="kbd">R</span>
+            </button>
+          </div>
+
+          <!-- 2D Editor -->
+          <div class="skin-editor">
+            <div class="skin-group-title" data-i18n="skin-2d">2D Editor</div>
+
+            <div class="canvas-wrap">
+              <canvas id="skin2d" width="512" height="512"></canvas>
+              <div class="canvas-hint" id="canvas-hint">64×64</div>
+            </div>
+
+            <div class="skin-actions">
+              <input type="file" id="skin-import" accept="image/png" hidden />
+              <button class="action-btn" id="btn-import" title="Import PNG (Ctrl+O)">
+                Import PNG <span class="kbd">Ctrl O</span>
+              </button>
+              <button class="action-btn" id="btn-export" title="Export skin.png (Ctrl+S)">
+                Export skin.png <span class="kbd">Ctrl S</span>
+              </button>
+              <button class="action-btn action-secondary" id="btn-clear" title="Clear layer">
+                Clear Layer
+              </button>
+            </div>
+
+            <div class="skin-status" id="skin-status">
+              Tool: Brush · Layer: Base · Color: <span id="color-hex">#3c8527</span>
+            </div>
+          </div>
+
+          <!-- Right panel -->
+          <div class="skin-right">
+            <div class="skin-group-title" data-i18n="skin-preview">3D Preview</div>
+
+            <div class="preview-box">
+              <canvas id="skin3d"></canvas>
+            </div>
+
+            <div class="skin-divider"></div>
+
+            <div class="skin-group-title" data-i18n="skin-model">Model</div>
+            <div class="segmented">
+              <button class="seg-btn seg-active" id="model-classic">Classic</button>
+              <button class="seg-btn" id="model-slim">Slim</button>
+            </div>
+
+            <div class="skin-divider"></div>
+
+            <div class="skin-group-title" data-i18n="skin-color">Color</div>
+            <div class="color-row">
+              <input type="color" id="color-input" value="#3c8527" />
+              <div class="color-chip" id="color-chip" title="#3c8527"></div>
+            </div>
+
+            <div class="palette" id="palette"></div>
+
+            <div class="skin-divider"></div>
+
+            <div class="skin-hotkeys">
+              <div class="skin-group-title">Hotkeys</div>
+              <div class="hotkey-line"><span class="kbd">B</span> Brush</div>
+              <div class="hotkey-line"><span class="kbd">E</span> Eraser</div>
+              <div class="hotkey-line"><span class="kbd">I</span> Picker</div>
+              <div class="hotkey-line"><span class="kbd">G</span> Fill</div>
+              <div class="hotkey-line"><span class="kbd">L</span> Toggle Layer</div>
+              <div class="hotkey-line"><span class="kbd">R</span> Reset 3D</div>
+              <div class="hotkey-line"><span class="kbd">Ctrl Z</span> Undo</div>
+              <div class="hotkey-line"><span class="kbd">Ctrl Y</span> Redo</div>
+              <div class="hotkey-line"><span class="kbd">Ctrl S</span> Export</div>
+              <div class="hotkey-line"><span class="kbd">Ctrl O</span> Import</div>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   </main>
 
@@ -56,6 +189,10 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
+  <!-- skinview3d -->
+  <script src="https://unpkg.com/skinview3d@3.0.0/bundles/skinview3d.bundle.js"></script>
+
   <script src="script.js" defer></script>
 </body>
 </html>
