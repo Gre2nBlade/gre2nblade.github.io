@@ -5,7 +5,6 @@ old/
 test.html
 preview.html
 *.old.html
-*.png
 
 # Старые версии
 main-*.html
