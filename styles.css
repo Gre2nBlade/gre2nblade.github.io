@@ -152,8 +152,8 @@ footer a:hover {
   position: absolute;
   top: 3px;
   left: 3px;
-  width: 27px;
-  height: 27px;
+  width: 18px;
+  height: 18px;
 
   background-color: #fff;
   transition: left 0.3s ease;
@@ -162,7 +162,7 @@ footer a:hover {
   background-image: url("icons/sun.webp");
   background-repeat: no-repeat;
   background-position: center;
-  background-size: 18px 18px;
+  background-size: 27px 27px;
 }
 
 .switch-btn.switch-on::after {
