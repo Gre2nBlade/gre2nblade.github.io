@@ -414,10 +414,26 @@ footer a:hover {
   overflow: hidden;
 }
 
+#panel-skin {
+  overflow: hidden;
+}
+
+.skin-editor-wrap {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
 #skin3d {
   width: 100%;
-  height: 260px;
+  height: 520px;
   display: block;
+  max-width: 100%;
+  border-radius: 14px;
+}
+
+#skin3d.paint-mode {
+  cursor: crosshair;
 }
 
 .segmented {

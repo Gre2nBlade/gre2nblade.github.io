@@ -96,14 +96,24 @@ window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (e)
 });
 
 // =====================
-// Tabs
+// Tabs (with persistence + hash)
 // =====================
 const tabConverter = document.getElementById("tab-converter");
 const tabSkin = document.getElementById("tab-skin");
 const panelConverter = document.getElementById("panel-converter");
 const panelSkin = document.getElementById("panel-skin");
 
-function setTab(tab) {
+function getInitialTab() {
+  const hash = (location.hash || "").replace("#", "");
+  if (hash === "skin" || hash === "converter") return hash;
+
+  const saved = localStorage.getItem("activeTab");
+  if (saved === "skin" || saved === "converter") return saved;
+
+  return "converter";
+}
+
+function setTab(tab, opts = { pushHash: true }) {
   const isConverter = tab === "converter";
 
   tabConverter.classList.toggle("tab-active", isConverter);
@@ -115,7 +125,13 @@ function setTab(tab) {
   panelConverter.classList.toggle("tab-panel-active", isConverter);
   panelSkin.classList.toggle("tab-panel-active", !isConverter);
 
-  // Init skin editor lazily
+  localStorage.setItem("activeTab", tab);
+
+  if (opts.pushHash) {
+    history.replaceState(null, "", "#" + tab);
+  }
+
+  // Lazy init skin editor
   if (!isConverter) {
     window.__openSkinEditor?.();
   }
@@ -123,6 +139,14 @@ function setTab(tab) {
 
 tabConverter.addEventListener("click", () => setTab("converter"));
 tabSkin.addEventListener("click", () => setTab("skin"));
+
+window.addEventListener("hashchange", () => {
+  const hash = (location.hash || "").replace("#", "");
+  if (hash === "skin" || hash === "converter") setTab(hash, { pushHash: false });
+});
+
+// init
+setTab(getInitialTab(), { pushHash: true });
 
 // =====================
 // Converter
@@ -261,15 +285,13 @@ function sleep(ms) {
 }
 
 convertButton.onclick = downloadPack;
-
 // =====================
-// Skin Editor MVP (inline module)
+// Skin Editor MVP (3D paint)
 // =====================
 (() => {
   let initialized = false;
 
   const W = 64, H = 64;
-  const SCALE = 8; // 64*8=512
   const OVERLAY_ALPHA = 255;
 
   const state = {
@@ -277,15 +299,17 @@ convertButton.onclick = downloadPack;
     layer: "base", // base | overlay
     color: "#3c8527",
     model: "classic", // classic | slim
-    mouseDown: false,
+    painting: false,
+    lastPaint: null,
+
     history: [],
     historyIndex: -1
   };
 
   const els = {
-    tabSkin,
-    panelSkin,
+    panelSkin: document.getElementById("panel-skin"),
 
+    // optional 2D view
     canvas2d: document.getElementById("skin2d"),
     hint: document.getElementById("canvas-hint"),
     status: document.getElementById("skin-status"),
@@ -313,16 +337,17 @@ convertButton.onclick = downloadPack;
     canvas3d: document.getElementById("skin3d")
   };
 
-  const ctx2d = els.canvas2d.getContext("2d", { willReadFrequently: true });
-  ctx2d.imageSmoothingEnabled = false;
+  // 2D view ctx (optional)
+  const ctx2d = els.canvas2d?.getContext?.("2d", { willReadFrequently: true }) ?? null;
+  if (ctx2d) ctx2d.imageSmoothingEnabled = false;
 
   // Base and overlay stored separately
   const base = new Uint8ClampedArray(W * H * 4);
   const overlay = new Uint8ClampedArray(W * H * 4);
-
-  // init transparent
   base.fill(0);
   overlay.fill(0);
+
+  function idx(x, y) { return (y * W + x) * 4; }
 
   function rgbaToHex(r, g, b) {
     return "#" + [r, g, b].map(v => v.toString(16).padStart(2, "0")).join("");
@@ -334,10 +359,6 @@ convertButton.onclick = downloadPack;
     return { r: parseInt(m[1], 16), g: parseInt(m[2], 16), b: parseInt(m[3], 16) };
   }
 
-  function idx(x, y) {
-    return (y * W + x) * 4;
-  }
-
   function getLayerArray() {
     return state.layer === "base" ? base : overlay;
   }
@@ -345,10 +366,7 @@ convertButton.onclick = downloadPack;
   function setPixel(arr, x, y, r, g, b, a) {
     if (x < 0 || y < 0 || x >= W || y >= H) return;
     const i = idx(x, y);
-    arr[i] = r;
-    arr[i + 1] = g;
-    arr[i + 2] = b;
-    arr[i + 3] = a;
+    arr[i] = r; arr[i + 1] = g; arr[i + 2] = b; arr[i + 3] = a;
   }
 
   function getPixel(arr, x, y) {
@@ -358,7 +376,6 @@ convertButton.onclick = downloadPack;
   }
 
   function compositeToImageData() {
-    // base then overlay
     const out = new Uint8ClampedArray(W * H * 4);
     out.set(base);
 
@@ -366,57 +383,12 @@ convertButton.onclick = downloadPack;
       const i = p * 4;
       const oa = overlay[i + 3];
       if (oa === 0) continue;
-      // overlay is fully opaque when painted, keep alpha
       out[i] = overlay[i];
       out[i + 1] = overlay[i + 1];
       out[i + 2] = overlay[i + 2];
       out[i + 3] = overlay[i + 3];
     }
-
     return new ImageData(out, W, H);
-  }
-
-  function redraw() {
-    // draw checkered background
-    ctx2d.clearRect(0, 0, els.canvas2d.width, els.canvas2d.height);
-    const cell = 16;
-    for (let y = 0; y < els.canvas2d.height; y += cell) {
-      for (let x = 0; x < els.canvas2d.width; x += cell) {
-        const isDark = ((x / cell) + (y / cell)) % 2 === 0;
-        ctx2d.fillStyle = isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.10)";
-        ctx2d.fillRect(x, y, cell, cell);
-      }
-    }
-
-    const img = compositeToImageData();
-
-    // draw scaled
-    const tmp = document.createElement("canvas");
-    tmp.width = W;
-    tmp.height = H;
-    const tctx = tmp.getContext("2d");
-    tctx.putImageData(img, 0, 0);
-
-    ctx2d.imageSmoothingEnabled = false;
-    ctx2d.drawImage(tmp, 0, 0, W, H, 0, 0, W * SCALE, H * SCALE);
-
-    // subtle grid
-    ctx2d.strokeStyle = "rgba(0,0,0,0.10)";
-    for (let x = 0; x <= W; x += 8) {
-      ctx2d.beginPath();
-      ctx2d.moveTo(x * SCALE, 0);
-      ctx2d.lineTo(x * SCALE, H * SCALE);
-      ctx2d.stroke();
-    }
-    for (let y = 0; y <= H; y += 8) {
-      ctx2d.beginPath();
-      ctx2d.moveTo(0, y * SCALE);
-      ctx2d.lineTo(W * SCALE, y * SCALE);
-      ctx2d.stroke();
-    }
-
-    updateStatus();
-    update3D();
   }
 
   // =====================
@@ -439,24 +411,21 @@ convertButton.onclick = downloadPack;
     state.color = snap.color;
     state.model = snap.model;
 
-    // sync UI
     els.layerLabel.textContent = state.layer === "base" ? "Base" : "Overlay";
     els.colorInput.value = state.color;
     els.colorChip.style.background = state.color;
-    els.colorChip.title = state.color;
 
     els.modelClassic.classList.toggle("seg-active", state.model === "classic");
     els.modelSlim.classList.toggle("seg-active", state.model === "slim");
 
-    redraw();
+    redraw2D();
+    update3D();
   }
 
   function pushHistory() {
-    // cut future
     state.history = state.history.slice(0, state.historyIndex + 1);
     state.history.push(snapshot());
     state.historyIndex = state.history.length - 1;
-
     updateUndoRedoButtons();
   }
 
@@ -480,21 +449,35 @@ convertButton.onclick = downloadPack;
   }
 
   // =====================
-  // Tools
+  // 2D redraw (preview only)
   // =====================
-  function setTool(tool) {
-    state.tool = tool;
-    document.querySelectorAll(".tool-btn[data-tool]").forEach(btn => {
-      btn.classList.toggle("tool-active", btn.dataset.tool === tool);
-    });
-    updateStatus();
-  }
+  function redraw2D() {
+    if (!ctx2d || !els.canvas2d) return;
 
-  function toggleLayer() {
-    state.layer = state.layer === "base" ? "overlay" : "base";
-    els.layerLabel.textContent = state.layer === "base" ? "Base" : "Overlay";
-    pushHistory(); // track change
-    redraw();
+    const SCALE = 8;
+    els.canvas2d.width = W * SCALE;
+    els.canvas2d.height = H * SCALE;
+
+    // bg
+    ctx2d.clearRect(0, 0, els.canvas2d.width, els.canvas2d.height);
+    const cell = 16;
+    for (let y = 0; y < els.canvas2d.height; y += cell) {
+      for (let x = 0; x < els.canvas2d.width; x += cell) {
+        const isDark = ((x / cell) + (y / cell)) % 2 === 0;
+        ctx2d.fillStyle = isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.10)";
+        ctx2d.fillRect(x, y, cell, cell);
+      }
+    }
+
+    const img = compositeToImageData();
+    const tmp = document.createElement("canvas");
+    tmp.width = W;
+    tmp.height = H;
+    const tctx = tmp.getContext("2d");
+    tctx.putImageData(img, 0, 0);
+
+    ctx2d.imageSmoothingEnabled = false;
+    ctx2d.drawImage(tmp, 0, 0, W, H, 0, 0, W * SCALE, H * SCALE);
   }
 
   function updateStatus(extra = "") {
@@ -510,14 +493,84 @@ convertButton.onclick = downloadPack;
     }
   }
 
-  function canvasToPixel(ev) {
-    const rect = els.canvas2d.getBoundingClientRect();
-    const x = Math.floor((ev.clientX - rect.left) / (rect.width / (W)));
-    const y = Math.floor((ev.clientY - rect.top) / (rect.height / (H)));
-    return { x: Math.max(0, Math.min(W - 1, x)), y: Math.max(0, Math.min(H - 1, y)) };
+  // =====================
+  // 3D Preview + Painting
+  // =====================
+  let viewer = null;
+
+  function buildSkinPNGBlob() {
+    const img = compositeToImageData();
+    const c = document.createElement("canvas");
+    c.width = W;
+    c.height = H;
+    const cctx = c.getContext("2d");
+    cctx.putImageData(img, 0, 0);
+    return new Promise(resolve => c.toBlob(resolve, "image/png"));
   }
 
-  function paintAt(x, y) {
+  async function update3D() {
+    if (!viewer) return;
+    const blob = await buildSkinPNGBlob();
+    const url = URL.createObjectURL(blob);
+    try {
+      viewer.loadSkin(url, { model: state.model === "slim" ? "slim" : "default" });
+    } finally {
+      setTimeout(() => URL.revokeObjectURL(url), 1500);
+    }
+  }
+
+  function init3D() {
+    if (!window.skinview3d) {
+      console.warn("skinview3d not loaded");
+      return;
+    }
+
+    viewer = new skinview3d.SkinViewer({
+      canvas: els.canvas3d,
+      width: els.canvas3d.clientWidth || 420,
+      height: els.canvas3d.clientHeight || 520,
+      skin: null
+    });
+
+    viewer.zoom = 0.9;
+    viewer.fov = 70;
+
+    // controls:
+    viewer.controls.enableRotate = true;
+    viewer.controls.enableZoom = true;
+    viewer.controls.enablePan = true;
+
+    // IMPORTANT:
+    // - LMB should paint, so we disable rotate on LMB.
+    // - RMB should pan.
+    // We'll handle LMB ourselves by preventing controls on left.
+    viewer.controls.mouseButtons = {
+      LEFT: -1,   // disable default left
+      MIDDLE: skinview3d.THREE.MOUSE.DOLLY,
+      RIGHT: skinview3d.THREE.MOUSE.PAN
+    };
+
+    viewer.autoRotate = false;
+  }
+
+  function resetView() {
+    if (!viewer) return;
+    viewer.controls.reset();
+  }
+
+  function uvToPixel(uv) {
+    // uv: {x:0..1, y:0..1}
+    // Minecraft skin textures use (0,0) top-left in image,
+    // but UV usually has (0,0) bottom-left -> flip Y
+    const x = Math.floor(uv.x * W);
+    const y = Math.floor((1 - uv.y) * H);
+    return {
+      x: Math.max(0, Math.min(W - 1, x)),
+      y: Math.max(0, Math.min(H - 1, y))
+    };
+  }
+
+  function paintPixelAt(x, y) {
     const arr = getLayerArray();
 
     if (state.tool === "picker") {
@@ -527,20 +580,7 @@ convertButton.onclick = downloadPack;
       state.color = hex;
       els.colorInput.value = hex;
       els.colorChip.style.background = hex;
-      els.colorChip.title = hex;
-      redraw();
-      return;
-    }
-
-    if (state.tool === "fill") {
-      const target = getPixel(arr, x, y);
-      const { r, g, b } = hexToRgb(state.color);
-
-      // If already same
-      if (target.a !== 0 && target.r === r && target.g === g && target.b === b) return;
-
-      floodFill(arr, x, y, target, { r, g, b, a: OVERLAY_ALPHA });
-      redraw();
+      updateStatus(`Picked ${hex}`);
       return;
     }
 
@@ -554,89 +594,44 @@ convertButton.onclick = downloadPack;
     setPixel(arr, x, y, r, g, b, OVERLAY_ALPHA);
   }
 
-  function floodFill(arr, x, y, target, repl) {
-    const match = (p) => p.a === target.a && p.r === target.r && p.g === target.g && p.b === target.b;
+  function raycastUVFromMouse(ev) {
+    if (!viewer) return null;
 
-    const start = getPixel(arr, x, y);
-    if (!match(start)) return;
+    const rect = els.canvas3d.getBoundingClientRect();
+    const mx = ((ev.clientX - rect.left) / rect.width) * 2 - 1;
+    const my = -(((ev.clientY - rect.top) / rect.height) * 2 - 1);
 
-    const stack = [{ x, y }];
-    const visited = new Uint8Array(W * H);
+    // Use skinview3d internal THREE
+    const THREE = skinview3d.THREE;
 
-    while (stack.length) {
-      const cur = stack.pop();
-      const key = cur.y * W + cur.x;
-      if (visited[key]) continue;
-      visited[key] = 1;
+    // Raycaster
+    const raycaster = new THREE.Raycaster();
+    raycaster.setFromCamera(new THREE.Vector2(mx, my), viewer.camera);
 
-      const p = getPixel(arr, cur.x, cur.y);
-      if (!match(p)) continue;
+    // viewer.playerObject is root
+    const hits = raycaster.intersectObject(viewer.playerObject, true);
+    if (!hits.length) return null;
 
-      setPixel(arr, cur.x, cur.y, repl.r, repl.g, repl.b, repl.a);
-
-      if (cur.x > 0) stack.push({ x: cur.x - 1, y: cur.y });
-      if (cur.x < W - 1) stack.push({ x: cur.x + 1, y: cur.y });
-      if (cur.y > 0) stack.push({ x: cur.x, y: cur.y - 1 });
-      if (cur.y < H - 1) stack.push({ x: cur.x, y: cur.y + 1 });
+    // Find first hit with uv
+    for (const h of hits) {
+      if (h.uv) return h.uv;
     }
+    return null;
   }
 
-  // =====================
-  // 3D Preview (skinview3d)
-  // =====================
-  let viewer = null;
+  async function paintFromEvent(ev) {
+    const uv = raycastUVFromMouse(ev);
+    if (!uv) return;
 
-  function buildSkinPNGBlob() {
-    const img = compositeToImageData();
-    const c = document.createElement("canvas");
-    c.width = W;
-    c.height = H;
-    const cctx = c.getContext("2d");
-    cctx.putImageData(img, 0, 0);
+    const { x, y } = uvToPixel(uv);
 
-    return new Promise(resolve => c.toBlob(resolve, "image/png"));
-  }
+    // avoid painting same pixel too often
+    if (state.lastPaint && state.lastPaint.x === x && state.lastPaint.y === y) return;
+    state.lastPaint = { x, y };
 
-  async function update3D() {
-    if (!viewer) return;
-    const blob = await buildSkinPNGBlob();
-    const url = URL.createObjectURL(blob);
-    try {
-      viewer.loadSkin(url, { model: state.model === "slim" ? "slim" : "default" });
-    } finally {
-      // allow viewer to fetch
-      setTimeout(() => URL.revokeObjectURL(url), 2000);
-    }
-  }
-
-  function init3D() {
-    if (!window.skinview3d) {
-      console.warn("skinview3d not loaded");
-      return;
-    }
-
-    viewer = new skinview3d.SkinViewer({
-      canvas: els.canvas3d,
-      width: els.canvas3d.clientWidth || 220,
-      height: 260,
-      skin: null
-    });
-
-    viewer.zoom = 0.9;
-    viewer.fov = 70;
-    viewer.controls.enableZoom = true;
-    viewer.controls.enablePan = false;
-    viewer.controls.rotateSpeed = 0.8;
-
-    // idle rotation
-    viewer.autoRotate = true;
-    viewer.autoRotateSpeed = 0.6;
-  }
-
-  function resetView() {
-    if (!viewer) return;
-    viewer.autoRotate = true;
-    viewer.controls.reset();
+    paintPixelAt(x, y);
+    redraw2D();
+    await update3D();
   }
 
   // =====================
@@ -645,13 +640,10 @@ convertButton.onclick = downloadPack;
   async function importPNG(file) {
     const img = new Image();
     img.decoding = "async";
-
     const url = URL.createObjectURL(file);
     img.src = url;
 
     await img.decode().catch(() => {});
-
-    // Draw into temp
     const t = document.createElement("canvas");
     const tctx = t.getContext("2d", { willReadFrequently: true });
 
@@ -660,31 +652,32 @@ convertButton.onclick = downloadPack;
       tctx.drawImage(img, 0, 0);
       const data = tctx.getImageData(0, 0, 64, 64).data;
 
-      // load as base, clear overlay
       base.set(data);
       overlay.fill(0);
+
       pushHistory();
-      redraw();
+      redraw2D();
+      await update3D();
       URL.revokeObjectURL(url);
       return;
     }
 
     if (img.width === 64 && img.height === 32) {
-      // convert legacy 64x32 -> 64x64
+      // legacy convert
       t.width = 64; t.height = 64;
       tctx.clearRect(0, 0, 64, 64);
       tctx.drawImage(img, 0, 0);
 
-      // Legacy: copy and mirror to fill missing parts
-      // Simple approach: keep upper half, duplicate lower half
-      // (This is basic conversion; later можно улучшить под точные регионы)
+      // naive duplicate lower part (MVP)
       tctx.drawImage(img, 0, 16, 64, 16, 0, 32, 64, 16);
 
       const data = tctx.getImageData(0, 0, 64, 64).data;
       base.set(data);
       overlay.fill(0);
+
       pushHistory();
-      redraw();
+      redraw2D();
+      await update3D();
       URL.revokeObjectURL(url);
       return;
     }
@@ -699,10 +692,10 @@ convertButton.onclick = downloadPack;
   }
 
   function clearLayer() {
-    const arr = getLayerArray();
-    arr.fill(0);
+    getLayerArray().fill(0);
     pushHistory();
-    redraw();
+    redraw2D();
+    update3D();
   }
 
   // =====================
@@ -729,17 +722,37 @@ convertButton.onclick = downloadPack;
         state.color = c;
         els.colorInput.value = c;
         els.colorChip.style.background = c;
-        els.colorChip.title = c;
-        redraw();
+        updateStatus();
       });
       els.palette.appendChild(d);
     }
   }
 
   // =====================
+  // Tools + UI
+  // =====================
+  function setTool(tool) {
+    state.tool = tool;
+    document.querySelectorAll(".tool-btn[data-tool]").forEach(btn => {
+      btn.classList.toggle("tool-active", btn.dataset.tool === tool);
+    });
+    updateStatus();
+  }
+
+  function toggleLayer() {
+    state.layer = state.layer === "base" ? "overlay" : "base";
+    els.layerLabel.textContent = state.layer === "base" ? "Base" : "Overlay";
+    pushHistory();
+    updateStatus();
+  }
+
+  // =====================
   // Events
   // =====================
   function initEvents() {
+    // disable context menu on 3D canvas (RMB)
+    els.canvas3d.addEventListener("contextmenu", (e) => e.preventDefault());
+
     // tool buttons
     document.querySelectorAll(".tool-btn[data-tool]").forEach(btn => {
       btn.addEventListener("click", () => setTool(btn.dataset.tool));
@@ -747,37 +760,30 @@ convertButton.onclick = downloadPack;
 
     els.btnUndo.addEventListener("click", undo);
     els.btnRedo.addEventListener("click", redo);
-
-    els.btnLayer.addEventListener("click", () => {
-      state.layer = state.layer === "base" ? "overlay" : "base";
-      els.layerLabel.textContent = state.layer === "base" ? "Base" : "Overlay";
-      pushHistory();
-      redraw();
-    });
+    els.btnLayer.addEventListener("click", toggleLayer);
 
     els.btnResetView.addEventListener("click", resetView);
 
-    els.modelClassic.addEventListener("click", () => {
+    els.modelClassic.addEventListener("click", async () => {
       state.model = "classic";
       els.modelClassic.classList.add("seg-active");
       els.modelSlim.classList.remove("seg-active");
       pushHistory();
-      redraw();
+      await update3D();
     });
 
-    els.modelSlim.addEventListener("click", () => {
+    els.modelSlim.addEventListener("click", async () => {
       state.model = "slim";
       els.modelSlim.classList.add("seg-active");
       els.modelClassic.classList.remove("seg-active");
       pushHistory();
-      redraw();
+      await update3D();
     });
 
     els.colorInput.addEventListener("input", () => {
       state.color = els.colorInput.value;
       els.colorChip.style.background = state.color;
-      els.colorChip.title = state.color;
-      redraw();
+      updateStatus();
     });
 
     els.btnImport.addEventListener("click", () => els.importInput.click());
@@ -790,48 +796,46 @@ convertButton.onclick = downloadPack;
     els.btnExport.addEventListener("click", exportPNG);
     els.btnClear.addEventListener("click", clearLayer);
 
-    // painting
-    els.canvas2d.addEventListener("mousedown", (ev) => {
-      state.mouseDown = true;
-      pushHistory(); // begin stroke
-      const { x, y } = canvasToPixel(ev);
-      paintAt(x, y);
-      redraw();
+    // 3D paint: LMB draws, RMB pans via controls
+    els.canvas3d.addEventListener("pointerdown", async (ev) => {
+      if (ev.button !== 0) return; // only LMB paints
+      state.painting = true;
+      state.lastPaint = null;
+
+      // begin stroke snapshot
+      pushHistory();
+
+      els.canvas3d.classList.add("paint-mode");
+      await paintFromEvent(ev);
     });
 
-    window.addEventListener("mouseup", () => state.mouseDown = false);
+    window.addEventListener("pointerup", () => {
+      state.painting = false;
+      state.lastPaint = null;
+      els.canvas3d.classList.remove("paint-mode");
+    });
 
-    els.canvas2d.addEventListener("mousemove", (ev) => {
-      const { x, y } = canvasToPixel(ev);
-      els.hint.textContent = `${W}×${H} · ${x},${y}`;
-
-      if (!state.mouseDown) return;
-      if (state.tool === "fill" || state.tool === "picker") return; // no drag fill/pick
-      paintAt(x, y);
-      redraw();
+    els.canvas3d.addEventListener("pointermove", async (ev) => {
+      if (!state.painting) return;
+      await paintFromEvent(ev);
     });
 
     // hotkeys
     window.addEventListener("keydown", (ev) => {
-      // only when skin tab is open
-      const skinOpen = panelSkin.classList.contains("tab-panel-active");
+      const skinOpen = els.panelSkin.classList.contains("tab-panel-active");
       if (!skinOpen) return;
 
       const key = ev.key.toLowerCase();
-
-      // ignore if user is typing
       const tag = document.activeElement?.tagName?.toLowerCase();
       if (tag === "input" || tag === "textarea") return;
 
-      // tools
       if (key === "b") { setTool("brush"); return; }
       if (key === "e") { setTool("eraser"); return; }
       if (key === "i") { setTool("picker"); return; }
       if (key === "g") { setTool("fill"); return; }
-      if (key === "l") { els.btnLayer.click(); return; }
+      if (key === "l") { toggleLayer(); return; }
       if (key === "r") { resetView(); return; }
 
-      // ctrl combos
       if (ev.ctrlKey && key === "z") {
         ev.preventDefault();
         if (ev.shiftKey) redo();
@@ -867,11 +871,16 @@ convertButton.onclick = downloadPack;
     init3D();
     initEvents();
 
-    // initial history snapshot
+    // initial UI
+    els.layerLabel.textContent = "Base";
+    els.colorInput.value = state.color;
+    els.colorChip.style.background = state.color;
+
     pushHistory();
-    redraw();
+    redraw2D();
+    update3D();
+    updateStatus();
   }
 
-  // expose to tabs
   window.__openSkinEditor = init;
 })();
