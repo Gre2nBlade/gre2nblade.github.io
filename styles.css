@@ -127,7 +127,6 @@ footer a:hover {
   color: #b0ff9f;
 }
 
-/* Тумблер тем с центральной иконкой */
 .theme-switcher {
   position: absolute;
   right: 7px;
@@ -154,13 +153,9 @@ footer a:hover {
   left: 3px;
   width: 18px;
   height: 18px;
-
   background-color: #fff;
   transition: left 0.3s ease;
-
-  /* PNG иконка */
   background-image: url("icons/sun.webp");
-  background-repeat: no-repeat;
   background-position: center;
   background-size: 18px 18px;
 }
@@ -171,7 +166,6 @@ footer a:hover {
   background-image: url("icons/moon.webp");
 }
 
-/* Иконки — одна в центре, динамическая замена через opacity */
 .theme-icon {
   position: absolute;
   left: 50%;
@@ -185,7 +179,7 @@ footer a:hover {
 }
 
 .theme-icon.sun {
-  opacity: 1; /* солнце по умолчанию (light) */
+  opacity: 1;
 }
 
 .switch-btn.switch-on .sun {
