@@ -135,6 +135,8 @@ function setTab(tab, opts = { pushHash: true }) {
   if (!isConverter) {
     window.__openSkinEditor?.();
   }
+
+  window.__skinResize?.();
 }
 
 tabConverter.addEventListener("click", () => setTab("converter"));
@@ -551,6 +553,16 @@ convertButton.onclick = downloadPack;
     };
 
     viewer.autoRotate = false;
+
+    function resizeViewer() {
+      if (!viewer) return;
+      const w = els.canvas3d.clientWidth || 800;
+      const h = els.canvas3d.clientHeight || 700;
+      viewer.setSize(w, h);
+    }
+
+    window.addEventListener("resize", resizeViewer);
+    setTimeout(resizeViewer, 50);
   }
 
   function resetView() {

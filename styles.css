@@ -414,14 +414,56 @@ footer a:hover {
   overflow: hidden;
 }
 
+/* Skin tab should grow naturally */
 #panel-skin {
-  overflow: hidden;
+  display: block;
+  overflow: visible;      /* ВАЖНО: не режем */
+  height: auto;
+  min-height: 0;
 }
 
+#panel-skin,
+#panel-skin * {
+  min-height: 0; /* fixes flex overflow clipping */
+}
+
+/* If you have some main container limiting height - neutralize */
+.tab-panel {
+  height: auto;
+  min-height: 0;
+  overflow: visible;
+}
+
+/* Make skin editor layout responsive and tall */
 .skin-editor-wrap {
   width: 100%;
   max-width: 100%;
-  overflow: hidden;
+  overflow: visible;
+}
+
+/* Make the 3D canvas big */
+#skin3d {
+  width: 100%;
+  height: min(78vh, 820px); /* БОЛЬШОЙ редактор */
+  min-height: 520px;
+  display: block;
+  max-width: 100%;
+  border-radius: 16px;
+}
+
+/* Prevent canvas from being squished by flex/grid */
+.skin-preview {
+  width: 100%;
+  flex: 1;
+  min-width: 0;
+}
+
+/* If parent uses flex/grid, ensure it can grow */
+.skin-layout {
+  display: grid;
+  grid-template-columns: 320px 1fr; /* tools + preview */
+  gap: 16px;
+  align-items: start;
 }
 
 #skin3d {
