@@ -627,8 +627,12 @@ convertButton.onclick = downloadPack;
     const mx = ((ev.clientX - rect.left) / rect.width) * 2 - 1;
     const my = -(((ev.clientY - rect.top) / rect.height) * 2 - 1);
 
-    // Use skinview3d internal THREE
-    const THREE = skinview3d.THREE;
+    // Используем THREE из skinview3d, а если его нет — пробуем глобальный THREE.
+    const THREE = (skinview3d && skinview3d.THREE) ? skinview3d.THREE : window.THREE;
+    if (!THREE || !THREE.Raycaster) {
+      // В этой сборке нет нужных типов — просто не даём падать.
+      return null;
+    }
 
     // Raycaster
     const raycaster = new THREE.Raycaster();
