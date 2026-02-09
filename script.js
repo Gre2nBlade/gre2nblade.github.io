@@ -300,6 +300,7 @@ convertButton.onclick = downloadPack;
     tool: "brush", // brush | eraser | picker | fill
     layer: "base", // base | overlay
     color: "#3c8527",
+    opacity: 255,  // 0-255
     model: "classic", // classic | slim
     painting: false,
     lastPaint: null,
@@ -320,6 +321,9 @@ convertButton.onclick = downloadPack;
     colorInput: document.getElementById("color-input"),
     colorChip: document.getElementById("color-chip"),
     palette: document.getElementById("palette"),
+
+    opacityInput: document.getElementById("opacity-input"),
+    opacityValue: document.getElementById("opacity-value"),
 
     importInput: document.getElementById("skin-import"),
     btnImport: document.getElementById("btn-import"),
@@ -607,7 +611,7 @@ convertButton.onclick = downloadPack;
 
     // brush
     const { r, g, b } = hexToRgb(state.color);
-    setPixel(arr, x, y, r, g, b, OVERLAY_ALPHA);
+    setPixel(arr, x, y, r, g, b, state.opacity);
   }
 
   function raycastUVFromMouse(ev) {
@@ -617,8 +621,8 @@ convertButton.onclick = downloadPack;
     const mx = ((ev.clientX - rect.left) / rect.width) * 2 - 1;
     const my = -(((ev.clientY - rect.top) / rect.height) * 2 - 1);
 
-    // Используем THREE из skinview3d, а если его нет — пробуем глобальный THREE.
-    const THREE = (skinview3d && skinview3d.THREE) ? skinview3d.THREE : window.THREE;
+    // Используем глобальный THREE (подключён через CDN).
+    const THREE = window.THREE;
     if (!THREE || !THREE.Raycaster) {
       // В этой сборке нет нужных типов — просто не даём падать.
       return null;
@@ -815,6 +819,17 @@ convertButton.onclick = downloadPack;
 
     els.btnExport.addEventListener("click", exportPNG);
     els.btnClear.addEventListener("click", clearLayer);
+
+    // opacity slider
+    if (els.opacityInput && els.opacityValue) {
+      els.opacityInput.addEventListener("input", () => {
+        const v = Number(els.opacityInput.value) || 0;
+        state.opacity = Math.max(0, Math.min(255, v));
+        const percent = Math.round((state.opacity / 255) * 100);
+        els.opacityValue.textContent = percent + "%";
+        updateStatus();
+      });
+    }
 
     // 3D paint: ЛКМ рисует, ПКМ/колёсико крутят сцену через OrbitControls
     els.canvas3d.addEventListener("pointerdown", async (ev) => {
