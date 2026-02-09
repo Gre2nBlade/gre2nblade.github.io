@@ -397,14 +397,18 @@ convertButton.onclick = downloadPack;
     const out = new Uint8ClampedArray(W * H * 4);
     out.set(base);
 
-    for (let p = 0; p < W * H; p++) {
-      const i = p * 4;
-      const oa = overlay[i + 3];
-      if (oa === 0) continue;
-      out[i] = overlay[i];
-      out[i + 1] = overlay[i + 1];
-      out[i + 2] = overlay[i + 2];
-      out[i + 3] = overlay[i + 3];
+    // Если редактируем базовый слой – верхний временно скрываем,
+    // чтобы было видно изменения «подложки».
+    if (state.layer !== "base") {
+      for (let p = 0; p < W * H; p++) {
+        const i = p * 4;
+        const oa = overlay[i + 3];
+        if (oa === 0) continue;
+        out[i] = overlay[i];
+        out[i + 1] = overlay[i + 1];
+        out[i + 2] = overlay[i + 2];
+        out[i + 3] = overlay[i + 3];
+      }
     }
     return new ImageData(out, W, H);
   }
@@ -643,8 +647,8 @@ convertButton.onclick = downloadPack;
     return null;
   }
 
-  async function paintFromEvent(ev) {
-    const uv = raycastUVFromMouse(ev);
+  async function paintFromEvent(ev, overrideUv) {
+    const uv = overrideUv || raycastUVFromMouse(ev);
     if (!uv) return;
 
     const { x, y } = uvToPixel(uv);
@@ -768,6 +772,8 @@ convertButton.onclick = downloadPack;
     els.layerLabel.textContent = state.layer === "base" ? "Base" : "Overlay";
     pushHistory();
     updateStatus();
+    redraw2D();
+    update3D();
   }
 
   // =====================
@@ -831,9 +837,17 @@ convertButton.onclick = downloadPack;
       });
     }
 
-    // 3D paint: ЛКМ рисует, ПКМ/колёсико крутят сцену через OrbitControls
+    // 3D paint: ЛКМ рисует по модели, ЛКМ мимо модели + ПКМ/колёсико крутят сцену
     els.canvas3d.addEventListener("pointerdown", async (ev) => {
       if (ev.button !== 0) return; // only LMB paints
+
+      // проверяем, попали ли в модель
+      const hitUv = raycastUVFromMouse(ev);
+      if (!hitUv) {
+        // клик мимо модели — даём OrbitControls крутить сцену
+        return;
+      }
+
       state.painting = true;
       state.lastPaint = null;
 
@@ -846,7 +860,7 @@ convertButton.onclick = downloadPack;
       pushHistory();
 
       els.canvas3d.classList.add("paint-mode");
-      await paintFromEvent(ev);
+      await paintFromEvent(ev, hitUv);
     });
 
     window.addEventListener("pointerup", () => {
