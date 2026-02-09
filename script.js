@@ -554,14 +554,17 @@ convertButton.onclick = downloadPack;
     viewer.controls.enablePan = true;
 
     // IMPORTANT:
-    // - LMB should paint, so we disable rotate on LMB.
-    // - RMB should pan.
-    // We'll handle LMB ourselves by preventing controls on left.
-    viewer.controls.mouseButtons = {
-      LEFT: -1,   // disable default left
-      MIDDLE: skinview3d.THREE.MOUSE.DOLLY,
-      RIGHT: skinview3d.THREE.MOUSE.PAN
-    };
+    // - LMB should по-хорошему рисовать, а не крутить.
+    // - Но в некоторых сборках skinview3d нет skinview3d.THREE.MOUSE,
+    //   поэтому защищаемся от падения. Если константы доступны —
+    //   переназначаем кнопки, иначе оставляем дефолтное поведение.
+    if (skinview3d.THREE && skinview3d.THREE.MOUSE) {
+      viewer.controls.mouseButtons = {
+        LEFT: -1,   // disable default left
+        MIDDLE: skinview3d.THREE.MOUSE.DOLLY,
+        RIGHT: skinview3d.THREE.MOUSE.PAN
+      };
+    }
 
     viewer.autoRotate = false;
 
