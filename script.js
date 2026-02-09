@@ -363,7 +363,8 @@ convertButton.onclick = downloadPack;
 
   // Заполнить базовый слой дефолтным цветом, чтобы модель была видна с самого начала
   function fillDefaultBase() {
-    const { r, g, b } = hexToRgb(state.color);
+    // нейтральный базовый цвет, чтобы мазки зелёного были хорошо видны
+    const { r, g, b } = hexToRgb("#c8a070");
     for (let i = 0; i < base.length; i += 4) {
       base[i] = r;
       base[i + 1] = g;
@@ -549,22 +550,11 @@ convertButton.onclick = downloadPack;
     viewer.fov = 70;
 
     // controls:
+    // Оставляем стандартное поведение OrbitControls (вращение/зум/пан),
+    // но при рисовании будем временно отключать controls, чтобы ЛКМ была «чистой».
     viewer.controls.enableRotate = true;
     viewer.controls.enableZoom = true;
     viewer.controls.enablePan = true;
-
-    // IMPORTANT:
-    // - LMB should по-хорошему рисовать, а не крутить.
-    // - Но в некоторых сборках skinview3d нет skinview3d.THREE.MOUSE,
-    //   поэтому защищаемся от падения. Если константы доступны —
-    //   переназначаем кнопки, иначе оставляем дефолтное поведение.
-    if (skinview3d.THREE && skinview3d.THREE.MOUSE) {
-      viewer.controls.mouseButtons = {
-        LEFT: -1,   // disable default left
-        MIDDLE: skinview3d.THREE.MOUSE.DOLLY,
-        RIGHT: skinview3d.THREE.MOUSE.PAN
-      };
-    }
 
     viewer.autoRotate = false;
 
@@ -826,11 +816,16 @@ convertButton.onclick = downloadPack;
     els.btnExport.addEventListener("click", exportPNG);
     els.btnClear.addEventListener("click", clearLayer);
 
-    // 3D paint: LMB draws, RMB pans via controls
+    // 3D paint: ЛКМ рисует, ПКМ/колёсико крутят сцену через OrbitControls
     els.canvas3d.addEventListener("pointerdown", async (ev) => {
       if (ev.button !== 0) return; // only LMB paints
       state.painting = true;
       state.lastPaint = null;
+
+      // во время мазка отключаем OrbitControls, чтобы ЛКМ не вращала сцену
+      if (viewer && viewer.controls) {
+        viewer.controls.enabled = false;
+      }
 
       // begin stroke snapshot
       pushHistory();
@@ -840,6 +835,9 @@ convertButton.onclick = downloadPack;
     });
 
     window.addEventListener("pointerup", () => {
+      if (state.painting && viewer && viewer.controls) {
+        viewer.controls.enabled = true;
+      }
       state.painting = false;
       state.lastPaint = null;
       els.canvas3d.classList.remove("paint-mode");
