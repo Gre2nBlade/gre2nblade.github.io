@@ -414,9 +414,9 @@ footer a:hover {
   overflow: hidden;
 }
 
-/* Skin tab should grow naturally */
+/* Skin tab should grow naturally, но отображение
+   контролируется общим классом .tab-panel */
 #panel-skin {
-  display: block;
   overflow: visible;      /* ВАЖНО: не режем */
   height: auto;
   min-height: 0;
