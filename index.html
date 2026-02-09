@@ -59,78 +59,65 @@
             <div class="skin-group-title" data-i18n="skin-tools">Tools</div>
 
             <button class="tool-btn tool-active" data-tool="brush" title="Brush (B)">
-              ✏️ <span>Brush</span><span class="kbd">B</span>
+              ✏️ <span>Brush</span>
             </button>
             <button class="tool-btn" data-tool="eraser" title="Eraser (E)">
-              🩹 <span>Eraser</span><span class="kbd">E</span>
+              🩹 <span>Eraser</span>
             </button>
             <button class="tool-btn" data-tool="picker" title="Eyedropper (I)">
-              🧪 <span>Picker</span><span class="kbd">I</span>
+              🧪 <span>Picker</span>
             </button>
             <button class="tool-btn" data-tool="fill" title="Fill (G)">
-              🎨 <span>Fill</span><span class="kbd">G</span>
+              🎨 <span>Fill</span>
             </button>
 
             <div class="skin-divider"></div>
 
             <button class="tool-btn" id="btn-undo" title="Undo (Ctrl+Z)">
-              ↶ <span>Undo</span><span class="kbd">Ctrl Z</span>
+              ↶ <span>Undo</span>
             </button>
             <button class="tool-btn" id="btn-redo" title="Redo (Ctrl+Y / Ctrl+Shift+Z)">
-              ↷ <span>Redo</span><span class="kbd">Ctrl Y</span>
+              ↷ <span>Redo</span>
             </button>
 
             <div class="skin-divider"></div>
 
             <button class="tool-btn" id="btn-layer" title="Toggle Layer (L)">
-              🧩 <span id="layer-label">Base</span><span class="kbd">L</span>
+              🧩 <span id="layer-label">Base</span>
             </button>
 
             <div class="skin-divider"></div>
 
             <button class="tool-btn" id="btn-reset-view" title="Reset View (R)">
-              🔄 <span>Reset 3D</span><span class="kbd">R</span>
+              🔄 <span>Reset 3D</span>
             </button>
           </div>
 
-          <!-- 2D Editor (collapsible) -->
-          <div class="skin-editor">
-            <button class="skin-2d-toggle" id="skin-2d-toggle" type="button">
-              <span class="skin-group-title" data-i18n="skin-2d">2D Editor</span>
-              <span class="skin-2d-arrow" id="skin-2d-arrow" aria-hidden="true">▶</span>
-            </button>
-
-            <div class="skin-2d-body" id="skin-2d-body">
-              <div class="canvas-wrap">
-                <canvas id="skin2d" width="512" height="512"></canvas>
-                <div class="canvas-hint" id="canvas-hint">64×64</div>
-              </div>
-
-              <div class="skin-actions">
-                <input type="file" id="skin-import" accept="image/png" hidden />
-                <button class="action-btn" id="btn-import" title="Import PNG (Ctrl+O)">
-                  Import PNG <span class="kbd">Ctrl O</span>
-                </button>
-                <button class="action-btn" id="btn-export" title="Export skin.png (Ctrl+S)">
-                  Export skin.png <span class="kbd">Ctrl S</span>
-                </button>
-                <button class="action-btn action-secondary" id="btn-clear" title="Clear layer">
-                  Clear Layer
-                </button>
-              </div>
-
-              <div class="skin-status" id="skin-status">
-                Tool: Brush · Layer: Base · Color: <span id="color-hex">#3c8527</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Right panel -->
+          <!-- Right panel: 3D + controls -->
           <div class="skin-right">
             <div class="skin-group-title" data-i18n="skin-preview">3D Preview</div>
 
             <div class="preview-box">
               <canvas id="skin3d"></canvas>
+            </div>
+
+            <div class="skin-divider"></div>
+
+            <div class="skin-actions">
+              <input type="file" id="skin-import" accept="image/png" hidden />
+              <button class="action-btn" id="btn-import" title="Import PNG (Ctrl+O)">
+                Import PNG <span class="kbd">Ctrl O</span>
+              </button>
+              <button class="action-btn" id="btn-export" title="Export skin.png (Ctrl+S)">
+                Export skin.png <span class="kbd">Ctrl S</span>
+              </button>
+              <button class="action-btn action-secondary" id="btn-clear" title="Clear layer">
+                Clear Layer
+              </button>
+            </div>
+
+            <div class="skin-status" id="skin-status">
+              Tool: Brush · Layer: Base · Color: <span id="color-hex">#3c8527</span>
             </div>
 
             <div class="skin-divider"></div>

@@ -59,7 +59,7 @@ main {
   border: 2px solid var(--border);
   padding: 28px 28px 20px 28px;
   width: 100%;
-  max-width: 520px;
+  max-width: 1080px;
   text-align: center;
 }
 
@@ -296,9 +296,10 @@ footer a:hover {
 =========================== */
 .skin-layout {
   display: grid;
-  grid-template-columns: 180px 1fr 240px;
-  gap: 14px;
-  align-items: start;
+  grid-template-columns: 240px 1fr; /* инструменты слева, сцена/панель справа */
+  gap: 18px;
+  align-items: flex-start;
+  text-align: left;
 }
 
 .skin-group-title {
@@ -314,7 +315,7 @@ footer a:hover {
   margin: 12px 0;
 }
 
-.skin-tools, .skin-right, .skin-editor {
+.skin-tools, .skin-right {
   border: 2px solid var(--border);
   padding: 12px;
   background: rgba(0,0,0,0.06);
@@ -363,7 +364,7 @@ footer a:hover {
   border: 2px solid var(--border);
   color: var(--text);
   display: grid;
-  grid-template-columns: 24px 1fr auto;
+  grid-template-columns: 24px 1fr;
   gap: 10px;
   align-items: center;
   font-weight: 600;
@@ -445,7 +446,8 @@ footer a:hover {
 .preview-box {
   border: 2px solid var(--border);
   background: var(--bg);
-  height: 260px;
+  height: 520px;
+  max-height: 70vh;
   overflow: hidden;
 }
 

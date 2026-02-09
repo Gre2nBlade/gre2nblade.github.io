@@ -311,10 +311,7 @@ convertButton.onclick = downloadPack;
   const els = {
     panelSkin: document.getElementById("panel-skin"),
 
-    // optional 2D view
-    skin2dToggle: document.getElementById("skin-2d-toggle"),
-    skin2dBody: document.getElementById("skin-2d-body"),
-    skin2dArrow: document.getElementById("skin-2d-arrow"),
+    // optional 2D view (удалён из DOM, canvas2d будет null и просто не используется)
     canvas2d: document.getElementById("skin2d"),
     hint: document.getElementById("canvas-hint"),
     status: document.getElementById("skin-status"),
@@ -362,6 +359,17 @@ convertButton.onclick = downloadPack;
     const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
     if (!m) return { r: 0, g: 0, b: 0 };
     return { r: parseInt(m[1], 16), g: parseInt(m[2], 16), b: parseInt(m[3], 16) };
+  }
+
+  // Заполнить базовый слой дефолтным цветом, чтобы модель была видна с самого начала
+  function fillDefaultBase() {
+    const { r, g, b } = hexToRgb(state.color);
+    for (let i = 0; i < base.length; i += 4) {
+      base[i] = r;
+      base[i + 1] = g;
+      base[i + 2] = b;
+      base[i + 3] = OVERLAY_ALPHA;
+    }
   }
 
   function getLayerArray() {
@@ -811,21 +819,6 @@ convertButton.onclick = downloadPack;
     els.btnExport.addEventListener("click", exportPNG);
     els.btnClear.addEventListener("click", clearLayer);
 
-    // переключатель 2D-редактора
-    if (els.skin2dToggle && els.skin2dBody) {
-      els.skin2dToggle.addEventListener("click", () => {
-        const willOpen = !els.skin2dBody.classList.contains("is-open");
-        els.skin2dBody.classList.toggle("is-open", willOpen);
-        if (els.skin2dArrow) {
-          els.skin2dArrow.textContent = willOpen ? "▼" : "▶";
-        }
-        // при открытии перерисуем 2D, чтобы канвас корректно подстроился
-        if (willOpen) {
-          redraw2D();
-        }
-      });
-    }
-
     // 3D paint: LMB draws, RMB pans via controls
     els.canvas3d.addEventListener("pointerdown", async (ev) => {
       if (ev.button !== 0) return; // only LMB paints
@@ -896,6 +889,9 @@ convertButton.onclick = downloadPack;
   function init() {
     if (initialized) return;
     initialized = true;
+
+    // сразу заливаем базовый слой цветом, чтобы 3D‑модель не была прозрачной
+    fillDefaultBase();
 
     initPalette();
     init3D();
