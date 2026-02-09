@@ -312,6 +312,9 @@ convertButton.onclick = downloadPack;
     panelSkin: document.getElementById("panel-skin"),
 
     // optional 2D view
+    skin2dToggle: document.getElementById("skin-2d-toggle"),
+    skin2dBody: document.getElementById("skin-2d-body"),
+    skin2dArrow: document.getElementById("skin-2d-arrow"),
     canvas2d: document.getElementById("skin2d"),
     hint: document.getElementById("canvas-hint"),
     status: document.getElementById("skin-status"),
@@ -807,6 +810,21 @@ convertButton.onclick = downloadPack;
 
     els.btnExport.addEventListener("click", exportPNG);
     els.btnClear.addEventListener("click", clearLayer);
+
+    // переключатель 2D-редактора
+    if (els.skin2dToggle && els.skin2dBody) {
+      els.skin2dToggle.addEventListener("click", () => {
+        const willOpen = !els.skin2dBody.classList.contains("is-open");
+        els.skin2dBody.classList.toggle("is-open", willOpen);
+        if (els.skin2dArrow) {
+          els.skin2dArrow.textContent = willOpen ? "▼" : "▶";
+        }
+        // при открытии перерисуем 2D, чтобы канвас корректно подстроился
+        if (willOpen) {
+          redraw2D();
+        }
+      });
+    }
 
     // 3D paint: LMB draws, RMB pans via controls
     els.canvas3d.addEventListener("pointerdown", async (ev) => {

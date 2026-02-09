@@ -320,6 +320,41 @@ footer a:hover {
   background: rgba(0,0,0,0.06);
 }
 
+/* Кнопка заголовка 2D-редактора (аккордеон) */
+.skin-2d-toggle {
+  width: 100%;
+  margin: 0 0 6px 0;
+  padding: 6px 8px;
+  background: transparent;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+}
+
+.skin-2d-arrow {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+/* Контейнер содержимого 2D-редактора по умолчанию скрыт */
+.skin-2d-body {
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  margin-top: 0;
+  transition: max-height 0.2s ease, opacity 0.2s ease, margin-top 0.2s ease;
+}
+
+.skin-2d-body.is-open {
+  max-height: 1000px; /* достаточно для всего контента */
+  opacity: 1;
+  margin-top: 6px;
+}
+
 .tool-btn {
   width: 100%;
   margin-top: 8px;

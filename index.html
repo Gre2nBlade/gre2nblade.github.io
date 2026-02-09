@@ -93,30 +93,35 @@
             </button>
           </div>
 
-          <!-- 2D Editor -->
+          <!-- 2D Editor (collapsible) -->
           <div class="skin-editor">
-            <div class="skin-group-title" data-i18n="skin-2d">2D Editor</div>
+            <button class="skin-2d-toggle" id="skin-2d-toggle" type="button">
+              <span class="skin-group-title" data-i18n="skin-2d">2D Editor</span>
+              <span class="skin-2d-arrow" id="skin-2d-arrow" aria-hidden="true">▶</span>
+            </button>
 
-            <div class="canvas-wrap">
-              <canvas id="skin2d" width="512" height="512"></canvas>
-              <div class="canvas-hint" id="canvas-hint">64×64</div>
-            </div>
+            <div class="skin-2d-body" id="skin-2d-body">
+              <div class="canvas-wrap">
+                <canvas id="skin2d" width="512" height="512"></canvas>
+                <div class="canvas-hint" id="canvas-hint">64×64</div>
+              </div>
 
-            <div class="skin-actions">
-              <input type="file" id="skin-import" accept="image/png" hidden />
-              <button class="action-btn" id="btn-import" title="Import PNG (Ctrl+O)">
-                Import PNG <span class="kbd">Ctrl O</span>
-              </button>
-              <button class="action-btn" id="btn-export" title="Export skin.png (Ctrl+S)">
-                Export skin.png <span class="kbd">Ctrl S</span>
-              </button>
-              <button class="action-btn action-secondary" id="btn-clear" title="Clear layer">
-                Clear Layer
-              </button>
-            </div>
+              <div class="skin-actions">
+                <input type="file" id="skin-import" accept="image/png" hidden />
+                <button class="action-btn" id="btn-import" title="Import PNG (Ctrl+O)">
+                  Import PNG <span class="kbd">Ctrl O</span>
+                </button>
+                <button class="action-btn" id="btn-export" title="Export skin.png (Ctrl+S)">
+                  Export skin.png <span class="kbd">Ctrl S</span>
+                </button>
+                <button class="action-btn action-secondary" id="btn-clear" title="Clear layer">
+                  Clear Layer
+                </button>
+              </div>
 
-            <div class="skin-status" id="skin-status">
-              Tool: Brush · Layer: Base · Color: <span id="color-hex">#3c8527</span>
+              <div class="skin-status" id="skin-status">
+                Tool: Brush · Layer: Base · Color: <span id="color-hex">#3c8527</span>
+              </div>
             </div>
           </div>
 
