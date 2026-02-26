@@ -96,59 +96,87 @@ window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (e)
 });
 
 // =====================
-// Tabs (with persistence + hash)
+// Navigation: sidebar + sections
 // =====================
 const tabConverter = document.getElementById("tab-converter");
 const tabSkin = document.getElementById("tab-skin");
 const panelConverter = document.getElementById("panel-converter");
 const panelSkin = document.getElementById("panel-skin");
+const panelMods = document.getElementById("panel-mods");
 
-function getInitialTab() {
+const sidebar = document.getElementById("sidebar");
+const sidebarToggle = document.getElementById("sidebar-toggle");
+const navConverter = document.getElementById("nav-converter");
+const navSkin = document.getElementById("nav-skin");
+const navMods = document.getElementById("nav-mods");
+
+function getInitialSection() {
   const hash = (location.hash || "").replace("#", "");
-  if (hash === "skin" || hash === "converter") return hash;
+  if (hash === "skin" || hash === "converter" || hash === "mods") return hash;
 
-  const saved = localStorage.getItem("activeTab");
-  if (saved === "skin" || saved === "converter") return saved;
+  const saved = localStorage.getItem("activeSection");
+  if (saved === "skin" || saved === "converter" || saved === "mods") return saved;
 
   return "converter";
 }
 
-function setTab(tab, opts = { pushHash: true }) {
-  const isConverter = tab === "converter";
+function setSection(section, opts = { pushHash: true }) {
+  const isConverter = section === "converter";
+  const isSkin = section === "skin";
+  const isMods = section === "mods";
 
-  tabConverter.classList.toggle("tab-active", isConverter);
-  tabSkin.classList.toggle("tab-active", !isConverter);
-
-  tabConverter.setAttribute("aria-selected", isConverter ? "true" : "false");
-  tabSkin.setAttribute("aria-selected", !isConverter ? "true" : "false");
-
+  // panels
   panelConverter.classList.toggle("tab-panel-active", isConverter);
-  panelSkin.classList.toggle("tab-panel-active", !isConverter);
+  panelSkin.classList.toggle("tab-panel-active", isSkin);
+  if (panelMods) panelMods.classList.toggle("tab-panel-active", isMods);
 
-  localStorage.setItem("activeTab", tab);
+  // old tabs (скрыты, но оставляем логику)
+  if (tabConverter && tabSkin) {
+    tabConverter.classList.toggle("tab-active", isConverter);
+    tabSkin.classList.toggle("tab-active", isSkin);
+    tabConverter.setAttribute("aria-selected", isConverter ? "true" : "false");
+    tabSkin.setAttribute("aria-selected", isSkin ? "true" : "false");
+  }
+
+  // sidebar active item
+  [navConverter, navSkin, navMods].forEach(btn => {
+    if (!btn) return;
+    const target = btn.dataset.section;
+    btn.classList.toggle("sidebar-active", target === section);
+  });
+
+  localStorage.setItem("activeSection", section);
 
   if (opts.pushHash) {
-    history.replaceState(null, "", "#" + tab);
+    history.replaceState(null, "", "#" + section);
   }
 
   // Lazy init skin editor
-  if (!isConverter) {
+  if (isSkin) {
     window.__openSkinEditor?.();
   }
 
   window.__skinResize?.();
 }
 
-tabConverter.addEventListener("click", () => setTab("converter"));
-tabSkin.addEventListener("click", () => setTab("skin"));
+// Sidebar interactions
+if (sidebarToggle && sidebar) {
+  sidebarToggle.addEventListener("click", () => {
+    sidebar.classList.toggle("is-open");
+  });
+}
+
+if (navConverter) navConverter.addEventListener("click", () => { setSection("converter"); sidebar?.classList.remove("is-open"); });
+if (navSkin) navSkin.addEventListener("click", () => { setSection("skin"); sidebar?.classList.remove("is-open"); });
+if (navMods) navMods.addEventListener("click", () => { setSection("mods"); sidebar?.classList.remove("is-open"); });
 
 window.addEventListener("hashchange", () => {
   const hash = (location.hash || "").replace("#", "");
-  if (hash === "skin" || hash === "converter") setTab(hash, { pushHash: false });
+  if (hash === "skin" || hash === "converter" || hash === "mods") setSection(hash, { pushHash: false });
 });
 
 // init
-setTab(getInitialTab(), { pushHash: true });
+setSection(getInitialSection(), { pushHash: true });
 
 // =====================
 // Converter
@@ -235,6 +263,7 @@ async function downloadPack() {
 
   const newZip = new JSZip();
   let loadedCount = 0;
+  const securityFindings = [];
 
   const startTime = performance.now();
   const minDuration = 900;
@@ -251,6 +280,17 @@ async function downloadPack() {
       const file = requiredFiles[cur];
       try {
         const blob = await fetch(file.downloads[0]).then(r => r.blob());
+
+        // анализ jar/java перед добавлением
+        try {
+          const findings = await scanBlobForSuspiciousCode(blob, file.path);
+          if (findings.length) {
+            securityFindings.push(...findings);
+          }
+        } catch (scanErr) {
+          console.warn("Scan error for", file.path, scanErr);
+        }
+
         newZip.file(file.path, blob);
         loadedCount++;
         setProgress(loadedCount / totalRequired);
@@ -280,6 +320,24 @@ async function downloadPack() {
 
   const content = await newZip.generateAsync({ type: "blob" });
   saveAs(content, `${manifest.name}-${manifest.versionId}.zip`);
+
+  // простой отчёт о найденных подозрительных местах во время конвертации
+  const reportEl = document.getElementById("converter-security-report");
+  if (reportEl) {
+    if (!securityFindings.length) {
+      reportEl.textContent = "Проверка модов: явных подозрительных паттернов не обнаружено.";
+    } else {
+      const unique = new Map();
+      securityFindings.forEach(f => {
+        const key = f.path + ":" + f.type;
+        if (!unique.has(key)) unique.set(key, f);
+      });
+      const list = Array.from(unique.values())
+        .map(f => `${f.path} → ${f.type}`)
+        .join(" | ");
+      reportEl.textContent = "Проверка модов: найдены подозрительные места → " + list;
+    }
+  }
 }
 
 function sleep(ms) {
@@ -287,6 +345,156 @@ function sleep(ms) {
 }
 
 convertButton.onclick = downloadPack;
+
+// =====================
+// Mod Analyzer (shared scanner)
+// =====================
+
+function getSuspiciousPatterns() {
+  return [
+    { id: "network", label: "Network", re: /java\/net|HttpURLConnection|URL\s*\(|OkHttp|Netty/ },
+    { id: "filesystem", label: "Filesystem", re: /java\/io\/File|FileInputStream|FileOutputStream|RandomAccessFile|Files\./ },
+    { id: "exec", label: "Exec", re: /Runtime\.getRuntime\(\)\.exec|ProcessBuilder/ },
+    { id: "reflect", label: "Reflection", re: /java\/lang\/reflect|Class\.forName/ },
+    { id: "crypto", label: "Crypto", re: /Cipher\.getInstance|MessageDigest|KeyGenerator/ },
+    { id: "script", label: "Scripting", re: /javax\.script|ScriptEngineManager/ }
+  ];
+}
+
+async function scanBlobForSuspiciousCode(blob, displayPath) {
+  const findings = [];
+  const ext = (displayPath || "").toLowerCase();
+
+  // .java: читаем как текст и сразу прогоняем
+  if (ext.endsWith(".java")) {
+    const text = await blob.text().catch(() => "");
+    if (!text) return findings;
+    const patterns = getSuspiciousPatterns();
+    const hits = patterns.filter(p => p.re.test(text));
+    hits.forEach(h => findings.push({ path: displayPath, type: h.label }));
+    return findings;
+  }
+
+  // .jar: это zip
+  if (ext.endsWith(".jar")) {
+    try {
+      const zip = await JSZip.loadAsync(blob);
+      const patterns = getSuspiciousPatterns();
+      const entries = Object.keys(zip.files);
+      const tasks = entries.map(async path => {
+        if (!path.endsWith(".class") && !path.endsWith(".java")) return;
+        const file = zip.files[path];
+        if (!file) return;
+        const content = await file.async("string").catch(() => "");
+        if (!content) return;
+        patterns.forEach(p => {
+          if (p.re.test(content)) {
+            findings.push({ path: path, type: p.label, jar: displayPath });
+          }
+        });
+      });
+      await Promise.all(tasks);
+    } catch (e) {
+      console.warn("Failed to scan jar", displayPath, e);
+    }
+  }
+
+  return findings;
+}
+
+// UI для Mod Analyzer
+const modsDropArea = document.getElementById("mods-drop-area");
+const modsFileInput = document.getElementById("mods-file-input");
+const modsSelectButton = document.getElementById("mods-select-button");
+const modsFileList = document.getElementById("mods-file-list");
+const modsResults = document.getElementById("mods-results");
+const modsResultsEmpty = document.getElementById("mods-results-empty");
+
+function renderModsFileList(files) {
+  if (!modsFileList) return;
+  if (!files.length) {
+    modsFileList.textContent = "";
+    return;
+  }
+  modsFileList.textContent = Array.from(files).map(f => f.name).join(", ");
+}
+
+function renderModsResults(finds) {
+  if (!modsResults || !modsResultsEmpty) return;
+  modsResults.innerHTML = "";
+  if (!finds.length) {
+    modsResultsEmpty.style.display = "block";
+    return;
+  }
+  modsResultsEmpty.style.display = "none";
+
+  const byFile = new Map();
+  finds.forEach(f => {
+    const key = f.jar ? (f.jar + "::" + f.path) : f.path;
+    if (!byFile.has(key)) byFile.set(key, { path: f.path, jar: f.jar, types: new Set() });
+    byFile.get(key).types.add(f.type);
+  });
+
+  byFile.forEach(entry => {
+    const div = document.createElement("div");
+    div.className = "mods-result-item";
+    const jarPrefix = entry.jar ? `[${entry.jar}] ` : "";
+    div.innerHTML = `<strong>${jarPrefix}${entry.path}</strong>`;
+
+    const tags = document.createElement("div");
+    tags.className = "mods-hit-tags";
+    entry.types.forEach(t => {
+      const tag = document.createElement("span");
+      tag.className = "mods-tag";
+      tag.textContent = t;
+      tags.appendChild(tag);
+    });
+    div.appendChild(tags);
+    modsResults.appendChild(div);
+  });
+}
+
+async function handleModsFiles(fileList) {
+  const files = Array.from(fileList || []);
+  renderModsFileList(files);
+  if (!files.length) {
+    renderModsResults([]);
+    return;
+  }
+  const allFinds = [];
+  for (const f of files) {
+    const finds = await scanBlobForSuspiciousCode(f, f.name);
+    allFinds.push(...finds);
+  }
+  renderModsResults(allFinds);
+}
+
+if (modsSelectButton && modsFileInput) {
+  modsSelectButton.onclick = () => modsFileInput.click();
+  modsFileInput.onchange = () => handleModsFiles(modsFileInput.files);
+}
+
+if (modsDropArea) {
+  ["dragenter", "dragover", "dragleave", "drop"].forEach(e => {
+    modsDropArea.addEventListener(e, ev => {
+      ev.preventDefault();
+      ev.stopPropagation();
+    });
+  });
+  ["dragenter", "dragover"].forEach(e => {
+    modsDropArea.addEventListener(e, () => modsDropArea.classList.add("highlight"));
+  });
+  ["dragleave", "drop"].forEach(e => {
+    modsDropArea.addEventListener(e, () => modsDropArea.classList.remove("highlight"));
+  });
+  modsDropArea.addEventListener("drop", ev => {
+    const files = ev.dataTransfer?.files;
+    if (files && files.length) {
+      handleModsFiles(files);
+    }
+  });
+  modsDropArea.addEventListener("click", () => modsFileInput?.click());
+}
 // =====================
 // Skin Editor MVP (3D paint)
 // =====================
