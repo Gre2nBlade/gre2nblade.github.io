@@ -105,7 +105,6 @@ const panelSkin = document.getElementById("panel-skin");
 const panelMods = document.getElementById("panel-mods");
 
 const sidebar = document.getElementById("sidebar");
-const sidebarToggle = document.getElementById("sidebar-toggle");
 const navConverter = document.getElementById("nav-converter");
 const navSkin = document.getElementById("nav-skin");
 const navMods = document.getElementById("nav-mods");
@@ -160,15 +159,29 @@ function setSection(section, opts = { pushHash: true }) {
 }
 
 // Sidebar interactions
-if (sidebarToggle && sidebar) {
-  sidebarToggle.addEventListener("click", () => {
-    sidebar.classList.toggle("is-open");
-  });
+function handleNavClick(section) {
+  if (!sidebar) {
+    setSection(section);
+    return;
+  }
+  // если панель ещё свернута — сначала раскрываем, не переключая секцию
+  if (!sidebar.classList.contains("is-open")) {
+    sidebar.classList.add("is-open");
+    return;
+  }
+  setSection(section);
 }
 
-if (navConverter) navConverter.addEventListener("click", () => { setSection("converter"); sidebar?.classList.remove("is-open"); });
-if (navSkin) navSkin.addEventListener("click", () => { setSection("skin"); sidebar?.classList.remove("is-open"); });
-if (navMods) navMods.addEventListener("click", () => { setSection("mods"); sidebar?.classList.remove("is-open"); });
+if (navConverter) navConverter.addEventListener("click", () => handleNavClick("converter"));
+if (navSkin) navSkin.addEventListener("click", () => handleNavClick("skin"));
+if (navMods) navMods.addEventListener("click", () => handleNavClick("mods"));
+
+// клик вне сайдбара — закрывает его
+document.addEventListener("pointerdown", (ev) => {
+  if (!sidebar) return;
+  if (sidebar.contains(ev.target)) return;
+  sidebar.classList.remove("is-open");
+});
 
 window.addEventListener("hashchange", () => {
   const hash = (location.hash || "").replace("#", "");
@@ -435,23 +448,79 @@ function renderModsResults(finds) {
     byFile.get(key).types.add(f.type);
   });
 
-  byFile.forEach(entry => {
-    const div = document.createElement("div");
-    div.className = "mods-result-item";
-    const jarPrefix = entry.jar ? `[${entry.jar}] ` : "";
-    div.innerHTML = `<strong>${jarPrefix}${entry.path}</strong>`;
+  function severityForType(type) {
+    if (type === "Exec") return "danger";
+    return "suspicious";
+  }
 
-    const tags = document.createElement("div");
-    tags.className = "mods-hit-tags";
-    entry.types.forEach(t => {
-      const tag = document.createElement("span");
-      tag.className = "mods-tag";
-      tag.textContent = t;
-      tags.appendChild(tag);
-    });
-    div.appendChild(tags);
-    modsResults.appendChild(div);
+  const buckets = {
+    danger: [],
+    suspicious: [],
+    other: []
+  };
+
+  byFile.forEach(entry => {
+    const severities = new Set();
+    entry.types.forEach(t => severities.add(severityForType(t)));
+    let target = "other";
+    if (severities.has("danger")) target = "danger";
+    else if (severities.has("suspicious")) target = "suspicious";
+    buckets[target].push(entry);
   });
+
+  function addSection(title, entries, key, defaultOpen) {
+    if (!entries.length) return;
+    const section = document.createElement("div");
+    section.className = "mods-section";
+
+    const header = document.createElement("button");
+    header.type = "button";
+    header.className = "mods-section-header";
+    header.dataset.section = key;
+    header.dataset.open = defaultOpen ? "true" : "false";
+    header.innerHTML = `<span class="mods-section-title">${title}</span><span class="mods-section-arrow">▶</span>`;
+
+    const body = document.createElement("div");
+    body.className = "mods-section-body";
+    if (defaultOpen) body.classList.add("is-open");
+
+    entries.forEach(entry => {
+      const div = document.createElement("div");
+      div.className = "mods-result-item";
+      const jarPrefix = entry.jar ? `[${entry.jar}] ` : "";
+      div.innerHTML = `<strong>${jarPrefix}${entry.path}</strong>`;
+
+      const tags = document.createElement("div");
+      tags.className = "mods-hit-tags";
+      entry.types.forEach(t => {
+        const tag = document.createElement("span");
+        tag.className = "mods-tag";
+        tag.textContent = t;
+        tags.appendChild(tag);
+      });
+      div.appendChild(tags);
+      body.appendChild(div);
+    });
+
+    header.addEventListener("click", () => {
+      const isOpen = body.classList.contains("is-open");
+      if (isOpen) {
+        body.classList.remove("is-open");
+        header.dataset.open = "false";
+      } else {
+        body.classList.add("is-open");
+        header.dataset.open = "true";
+      }
+    });
+
+    section.appendChild(header);
+    section.appendChild(body);
+    modsResults.appendChild(section);
+  }
+
+  addSection("Опасные", buckets.danger, "danger", true);
+  addSection("Подозрительные", buckets.suspicious, "suspicious", true);
+  addSection("Прочие", buckets.other, "other", false);
 }
 
 async function handleModsFiles(fileList) {
