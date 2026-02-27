@@ -223,6 +223,13 @@ dropArea.addEventListener("drop", e => {
   convertButton.disabled = false;
 });
 
+// клик по всей зоне drag&drop тоже открывает выбор файла
+dropArea.addEventListener("click", (e) => {
+  // чтобы не срабатывать повторно при клике по самой кнопке
+  if (e.target === selectButton) return;
+  fileInput.click();
+});
+
 const SIZE = 16;
 const cells = [];
 for (let i = 0; i < SIZE * SIZE; i++) {
@@ -377,16 +384,6 @@ function getSuspiciousPatterns() {
 async function scanBlobForSuspiciousCode(blob, displayPath) {
   const findings = [];
   const ext = (displayPath || "").toLowerCase();
-
-  // .java: читаем как текст и сразу прогоняем
-  if (ext.endsWith(".java")) {
-    const text = await blob.text().catch(() => "");
-    if (!text) return findings;
-    const patterns = getSuspiciousPatterns();
-    const hits = patterns.filter(p => p.re.test(text));
-    hits.forEach(h => findings.push({ path: displayPath, type: h.label }));
-    return findings;
-  }
 
   // .jar: это zip
   if (ext.endsWith(".jar")) {

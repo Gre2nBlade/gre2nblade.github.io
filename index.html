@@ -11,7 +11,7 @@
     <div class="container">
       <div id="sidebar" class="sidebar" aria-label="Tools navigation">
         <div class="sidebar-header">
-          <span class="sidebar-title">Tools</span>
+          <span class="sidebar-title">Mtools</span>
         </div>
         <button class="sidebar-item" id="nav-converter" data-section="converter">
           <span class="sidebar-icon">C</span>
@@ -27,7 +27,7 @@
         </button>
       </div>
 
-      <h1 id="page-title" data-i18n="title">Tools</h1>
+      <h1 id="page-title" data-i18n="title">Mtools</h1>
 
       <!-- Tabs (скрыты, оставляем для возможного будущего использования) -->
       <div class="tabs tabs-hidden" role="tablist" aria-label="Tools">
@@ -43,14 +43,16 @@
       <!-- Converter panel -->
       <!-- ===================== -->
       <section id="panel-converter" class="tab-panel tab-panel-active" role="tabpanel">
-        <div id="drop-area">
-          <p data-i18n="drop-text">Перетащите .mrpack файл сюда</p>
-          <input type="file" id="file-input" accept=".mrpack">
-          <button type="button" id="select-button" data-i18n="select-button">Выбрать файл</button>
+        <div class="converter-inner">
+          <div id="drop-area">
+            <p data-i18n="drop-text">Перетащите .mrpack файл сюда</p>
+            <input type="file" id="file-input" accept=".mrpack">
+            <button type="button" id="select-button" data-i18n="select-button">Выбрать файл</button>
+          </div>
+          <div id="file-name" class="file-msg" data-i18n="no-file">Файл не выбран</div>
+          <button id="convert-button" disabled data-i18n="convert">Конвертировать</button>
+          <div id="converter-security-report" class="file-msg"></div>
         </div>
-        <div id="file-name" class="file-msg" data-i18n="no-file">Файл не выбран</div>
-        <button id="convert-button" disabled data-i18n="convert">Конвертировать</button>
-        <div id="converter-security-report" class="file-msg"></div>
       </section>
 
       <!-- ===================== -->
@@ -176,23 +178,23 @@
       <!-- ===================== -->
       <section id="panel-mods" class="tab-panel" role="tabpanel">
         <div class="mods-layout">
-          <div class="mods-left">
+          <div class="mods-drop-block">
             <div class="skin-group-title">Mod Analyzer</div>
             <p class="mods-text">
-              Загрузите один или несколько .jar / .java файлов, мы проверим их на подозрительную активность
+              Загрузите один или несколько .jar файлов, мы проверим их на подозрительную активность
               (сеть, файловая система, exec, reflection и др.).
             </p>
 
             <div id="mods-drop-area" class="mods-drop">
-              <p>Перетащите .jar или .java сюда</p>
-              <input type="file" id="mods-file-input" accept=".jar,.java" multiple>
+              <p>Перетащите .jar сюда</p>
+              <input type="file" id="mods-file-input" accept=".jar" multiple>
               <button type="button" id="mods-select-button">Выбрать файлы</button>
             </div>
 
             <div id="mods-file-list" class="mods-file-list"></div>
           </div>
 
-          <div class="mods-right">
+          <div class="mods-results-block">
             <div class="skin-group-title">Scan Results</div>
             <div id="mods-results-empty" class="mods-empty">
               Пока ничего не анализировалось.

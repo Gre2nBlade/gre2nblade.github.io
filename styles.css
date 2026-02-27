@@ -661,6 +661,8 @@ footer a:hover {
   transition: width 0.2s ease;
   padding: 16px 14px;
   z-index: 30;
+  display: flex;
+  flex-direction: column;
 }
 
 .sidebar.is-open {
@@ -669,6 +671,11 @@ footer a:hover {
 
 .sidebar-header {
   margin-bottom: 12px;
+  display: none;
+}
+
+.sidebar.is-open .sidebar-header {
+  display: block;
 }
 
 .sidebar-title {
@@ -722,12 +729,12 @@ footer a:hover {
 =========================== */
 .mods-layout {
   display: grid;
-  grid-template-columns: 1.2fr 1.8fr;
-  gap: 18px;
+  grid-template-columns: 1fr;
+  gap: 14px;
   text-align: left;
 }
 
-.mods-left, .mods-right {
+.mods-drop-block, .mods-results-block {
   border: 2px solid var(--border);
   background: rgba(0,0,0,0.06);
   padding: 12px;
@@ -837,8 +844,10 @@ footer a:hover {
   .preview-box, #skin3d {
     height: 240px;
   }
+}
 
-  .mods-layout {
-    grid-template-columns: 1fr;
-  }
+/* Конвертер: суженный блок */
+.converter-inner {
+  max-width: 520px;
+  margin: 0 auto;
 }
