@@ -5,6 +5,8 @@ old/
 test.html
 preview.html
 *.old.html
+.kiro
+.vscode
 
 # Старые версии
 main-*.html

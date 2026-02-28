@@ -655,22 +655,38 @@ footer a:hover {
   left: 0;
   top: 0;
   bottom: 0;
-  width: 52px; /* только иконки */
+  width: 56px; /* Квадратные кнопки 56px - padding */
   background: var(--container-bg);
   border-right: 2px solid var(--border);
-  transition: width 0.2s ease;
-  padding: 16px 14px;
+  transition: width 0.2s ease, padding 0.2s ease;
+  padding: 12px 6px;
   z-index: 30;
   display: flex;
   flex-direction: column;
+  cursor: pointer; /* Клик по фону открывает меню */
 }
 
 .sidebar.is-open {
   width: 220px;
+  cursor: default;
+  padding: 16px 14px;
+}
+
+/* Граница для раскрытия */
+.sidebar::after {
+  content: "";
+  position: absolute;
+  right: -4px;
+  top: 0;
+  bottom: 0;
+  width: 8px;
+  cursor: ew-resize;
+  z-index: 31;
 }
 
 .sidebar-header {
-  margin-bottom: 12px;
+  margin-bottom: 20px;
+  padding: 0 10px;
   display: none;
 }
 
@@ -684,8 +700,11 @@ footer a:hover {
 }
 
 .sidebar-item {
-  margin-top: 8px;
-  padding: 8px 8px;
+  margin-top: 4px;
+  padding: 0;
+  width: 40px;
+  height: 40px;
+  justify-content: center;
   text-align: left;
   background: transparent;
   border: 2px solid var(--border);
@@ -694,6 +713,15 @@ footer a:hover {
   cursor: pointer;
   display: flex;
   align-items: center;
+  overflow: hidden;
+  transition: width 0.2s ease, padding 0.2s ease;
+  flex-shrink: 0;
+}
+
+.sidebar.is-open .sidebar-item {
+  width: 100%;
+  padding: 0 10px;
+  justify-content: flex-start;
 }
 
 .sidebar-item:hover {
@@ -707,8 +735,10 @@ footer a:hover {
 
 .sidebar-icon {
   width: 24px;
+  min-width: 24px;
   text-align: center;
   font-family: "Monocraft", monospace;
+  font-size: 16px;
 }
 
 .sidebar-label {
@@ -717,39 +747,71 @@ footer a:hover {
   white-space: nowrap;
   overflow: hidden;
   transition: opacity 0.15s ease, margin-left 0.15s ease;
+  display: none;
 }
 
 .sidebar.is-open .sidebar-label {
-  margin-left: 8px;
+  display: block;
+  margin-left: 12px;
   opacity: 1;
+}
+
+/* Конвертер: суженный блок */
+.converter-inner {
+  max-width: 420px;
+  margin: 0 auto;
 }
 
 /* ===========================
    Mod Analyzer layout
 =========================== */
 .mods-layout {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
   text-align: left;
+  max-width: 600px;
+  margin: 0 auto;
 }
 
-.mods-drop-block, .mods-results-block {
+.mods-drop-block {
   border: 2px solid var(--border);
   background: rgba(0,0,0,0.06);
+  padding: 20px;
+}
+
+.mods-results-block {
+  border: 2px solid var(--border);
+  background: rgba(0,0,0,0.02);
   padding: 12px;
+}
+
+.mods-gemini-config {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.mods-gemini-config input {
+  width: 100%;
+  padding: 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 12px;
 }
 
 .mods-text {
   font-size: 14px;
   opacity: 0.9;
   margin-top: 0;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
+  text-align: center;
 }
 
 .mods-drop {
   border: 2px dashed var(--accent);
-  padding: 18px;
+  padding: 24px;
   background-color: rgba(60, 133, 39, 0.10);
   cursor: pointer;
   text-align: center;
@@ -844,10 +906,4 @@ footer a:hover {
   .preview-box, #skin3d {
     height: 240px;
   }
-}
-
-/* Конвертер: суженный блок */
-.converter-inner {
-  max-width: 520px;
-  margin: 0 auto;
 }

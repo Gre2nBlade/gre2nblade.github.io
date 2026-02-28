@@ -181,8 +181,8 @@
           <div class="mods-drop-block">
             <div class="skin-group-title">Mod Analyzer</div>
             <p class="mods-text">
-              Загрузите один или несколько .jar файлов, мы проверим их на подозрительную активность
-              (сеть, файловая система, exec, reflection и др.).
+              Загрузите .jar файлы для поиска подозрительного кода. 
+              ИИ поможет проанализировать опасные фрагменты.
             </p>
 
             <div id="mods-drop-area" class="mods-drop">
@@ -192,6 +192,10 @@
             </div>
 
             <div id="mods-file-list" class="mods-file-list"></div>
+
+            <div class="mods-gemini-config">
+              <input type="password" id="gemini-api-key" placeholder="Gemini API Key (для ИИ анализа)" />
+            </div>
           </div>
 
           <div class="mods-results-block">

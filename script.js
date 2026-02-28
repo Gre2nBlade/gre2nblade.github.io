@@ -159,22 +159,31 @@ function setSection(section, opts = { pushHash: true }) {
 }
 
 // Sidebar interactions
-function handleNavClick(section) {
+function handleNavClick(section, event) {
   if (!sidebar) {
     setSection(section);
     return;
   }
-  // если панель ещё свернута — сначала раскрываем, не переключая секцию
-  if (!sidebar.classList.contains("is-open")) {
-    sidebar.classList.add("is-open");
-    return;
-  }
+  
+  // Если кликнули именно по кнопке (или иконке внутри неё), переключаем сразу
+  // даже если меню свернуто.
   setSection(section);
 }
 
-if (navConverter) navConverter.addEventListener("click", () => handleNavClick("converter"));
-if (navSkin) navSkin.addEventListener("click", () => handleNavClick("skin"));
-if (navMods) navMods.addEventListener("click", () => handleNavClick("mods"));
+if (navConverter) navConverter.addEventListener("click", (e) => handleNavClick("converter", e));
+if (navSkin) navSkin.addEventListener("click", (e) => handleNavClick("skin", e));
+if (navMods) navMods.addEventListener("click", (e) => handleNavClick("mods", e));
+
+// Раскрытие меню при клике на сам сайдбар (но не на кнопки) или на его край
+if (sidebar) {
+  sidebar.addEventListener("click", (e) => {
+    // Если клик был по кнопке навигации, handleNavClick уже сработал
+    if (e.target.closest(".sidebar-item")) return;
+    
+    // Раскрываем меню
+    sidebar.classList.add("is-open");
+  });
+}
 
 // клик вне сайдбара — закрывает его
 document.addEventListener("pointerdown", (ev) => {
@@ -385,31 +394,65 @@ async function scanBlobForSuspiciousCode(blob, displayPath) {
   const findings = [];
   const ext = (displayPath || "").toLowerCase();
 
-  // .jar: это zip
-  if (ext.endsWith(".jar")) {
-    try {
-      const zip = await JSZip.loadAsync(blob);
-      const patterns = getSuspiciousPatterns();
-      const entries = Object.keys(zip.files);
-      const tasks = entries.map(async path => {
-        if (!path.endsWith(".class") && !path.endsWith(".java")) return;
+  // Мы анализируем ТОЛЬКО .jar файлы
+  if (!ext.endsWith(".jar")) return findings;
+
+  try {
+    const zip = await JSZip.loadAsync(blob);
+    const patterns = getSuspiciousPatterns();
+    const entries = Object.keys(zip.files);
+    
+    // Ограничиваем количество файлов для анализа, чтобы не зависало
+    const tasks = entries
+      .filter(path => path.endsWith(".class"))
+      .map(async path => {
         const file = zip.files[path];
         if (!file) return;
+        
+        // В .class файлах ищем строки, JSZip.async("string") может вернуть бинарщину с вкраплениями текста
         const content = await file.async("string").catch(() => "");
         if (!content) return;
+        
         patterns.forEach(p => {
           if (p.re.test(content)) {
-            findings.push({ path: path, type: p.label, jar: displayPath });
+            findings.push({ path: path, type: p.label, jar: displayPath, content: content.substring(0, 1000) });
           }
         });
       });
-      await Promise.all(tasks);
-    } catch (e) {
-      console.warn("Failed to scan jar", displayPath, e);
-    }
+    
+    await Promise.all(tasks);
+  } catch (e) {
+    console.warn("Failed to scan jar", displayPath, e);
   }
 
   return findings;
+}
+
+// Gemini Integration
+async function analyzeWithGemini(findings) {
+  const apiKey = document.getElementById("gemini-api-key")?.value;
+  if (!apiKey || !findings.length) return null;
+
+  const prompt = `Проанализируй следующие подозрительные фрагменты кода из Minecraft мода. 
+  Определи, являются ли они вредоносными (RAT, логгер, удаление файлов) или это нормальное поведение (обновление мода, конфиги).
+  Дай краткий ответ для каждого типа:
+  
+  ${findings.map(f => `- Файл: ${f.path}\n- Тип: ${f.type}\n- Контекст: ${f.content.substring(0, 200)}`).join("\n\n")}`;
+
+  try {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }]
+      })
+    });
+    const data = await response.json();
+    return data.candidates?.[0]?.content?.parts?.[0]?.text || "Не удалось получить анализ от ИИ.";
+  } catch (err) {
+    console.error("Gemini API error:", err);
+    return "Ошибка при обращении к Gemini API.";
+  }
 }
 
 // UI для Mod Analyzer
@@ -429,7 +472,7 @@ function renderModsFileList(files) {
   modsFileList.textContent = Array.from(files).map(f => f.name).join(", ");
 }
 
-function renderModsResults(finds) {
+function renderModsResults(finds, aiAnalysis = null) {
   if (!modsResults || !modsResultsEmpty) return;
   modsResults.innerHTML = "";
   if (!finds.length) {
@@ -437,6 +480,19 @@ function renderModsResults(finds) {
     return;
   }
   modsResultsEmpty.style.display = "none";
+
+  // AI Section
+  if (aiAnalysis) {
+    const aiSection = document.createElement("div");
+    aiSection.className = "mods-section ai-analysis";
+    aiSection.innerHTML = `
+      <div class="mods-section-header" style="background: rgba(60, 133, 39, 0.1);">
+        <span class="mods-section-title">🤖 AI Анализ (Gemini)</span>
+      </div>
+      <div class="mods-section-body is-open" style="padding: 10px; font-style: italic; white-space: pre-wrap; max-height: none;">${aiAnalysis}</div>
+    `;
+    modsResults.appendChild(aiSection);
+  }
 
   const byFile = new Map();
   finds.forEach(f => {
@@ -527,12 +583,22 @@ async function handleModsFiles(fileList) {
     renderModsResults([]);
     return;
   }
+  
+  modsResults.innerHTML = "<p style='padding: 10px;'>Анализируем...</p>";
+  
   const allFinds = [];
   for (const f of files) {
     const finds = await scanBlobForSuspiciousCode(f, f.name);
     allFinds.push(...finds);
   }
-  renderModsResults(allFinds);
+  
+  let aiAnalysis = null;
+  const apiKey = document.getElementById("gemini-api-key")?.value;
+  if (apiKey && allFinds.length) {
+    aiAnalysis = await analyzeWithGemini(allFinds.slice(0, 10)); // Ограничиваем для API
+  }
+  
+  renderModsResults(allFinds, aiAnalysis);
 }
 
 if (modsSelectButton && modsFileInput) {
@@ -559,7 +625,10 @@ if (modsDropArea) {
       handleModsFiles(files);
     }
   });
-  modsDropArea.addEventListener("click", () => modsFileInput?.click());
+  modsDropArea.addEventListener("click", (e) => {
+    if (e.target === modsSelectButton) return;
+    modsFileInput?.click();
+  });
 }
 // =====================
 // Skin Editor MVP (3D paint)
