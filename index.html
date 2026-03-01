@@ -11,7 +11,7 @@
     <div class="container">
       <div id="sidebar" class="sidebar" aria-label="Tools navigation">
         <div class="sidebar-header">
-          <span class="sidebar-title">Mtools</span>
+          <span class="sidebar-title">mtools</span>
         </div>
         <button class="sidebar-item" id="nav-converter" data-section="converter">
           <span class="sidebar-icon">C</span>
@@ -27,9 +27,9 @@
         </button>
       </div>
 
-      <h1 id="page-title" data-i18n="title">Mtools</h1>
+      <h1 id="page-title" data-i18n="title">mtools</h1>
 
-      <!-- Tabs (скрыты, оставляем для возможного будущего использования) -->
+      <!-- Tabs (скрыты, возможно будущее использование) -->
       <div class="tabs tabs-hidden" role="tablist" aria-label="Tools">
         <button class="tab-btn tab-active" id="tab-converter" role="tab" aria-selected="true" data-i18n="tab-converter">
           Converter
@@ -60,9 +60,8 @@
       <!-- ===================== -->
       <section id="panel-skin" class="tab-panel" role="tabpanel">
         <div class="skin-layout">
-          <!-- Tools -->
           <div class="skin-tools">
-            <div class="skin-group-title" data-i18n="skin-tools">Tools</div>
+            <div class="skin-group-title" data-i18n="skin-tools">mtools</div>
 
             <button class="tool-btn tool-active" data-tool="brush" title="Brush (B)">
               ✏️ <span>Brush</span>
@@ -99,7 +98,6 @@
             </button>
           </div>
 
-          <!-- Right panel: 3D + controls -->
           <div class="skin-right">
             <div class="skin-group-title" data-i18n="skin-preview">3D Preview</div>
 
@@ -232,12 +230,16 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-
-  <!-- THREE глобально для raycast -->
   <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
-  <!-- Официальный skinview3d (использует THREE) -->
   <script src="https://cdn.jsdelivr.net/npm/skinview3d@3.4.1/bundles/skinview3d.bundle.js"></script>
 
-  <script src="script.js" defer></script>
+  <!-- Scripts -->
+  <script src="js/utils.js" defer></script>
+  <script src="js/i18n.js" defer></script>
+  <script src="js/theme.js" defer></script>
+  <script src="js/analyzer.js" defer></script>
+  <script src="js/converter.js" defer></script>
+  <script src="js/navigation.js" defer></script>
+  <script src="js/skin-editor.js" defer></script>
 </body>
 </html>
