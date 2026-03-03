@@ -252,12 +252,12 @@ footer a:hover {
   display: grid;
   grid-template-columns: repeat(16, 1fr);
   grid-template-rows: repeat(16, 1fr);
-  background: var(--bg);
+  background: #111;
 }
 
 .cell { background: transparent; }
-.cell.gray { background: #bcbcbc; }
-.cell.green { background: #7DB554; }
+.cell.gray { background: #8b8b8b; }
+.cell.green { background: #55ff55; }
 
 /* ===========================
    Tabs

@@ -38,7 +38,7 @@ document.querySelectorAll("[data-i18n]").forEach(el => {
 });
 
 // Version handling
-const MAJOR_VERSION = "0.0";
+const MAJOR_VERSION = "2.4";
 fetch("build.txt")
   .then(r => r.ok ? r.text() : "0")
   .catch(() => "0")

@@ -50,7 +50,18 @@ if (navMods) navMods.addEventListener("click", () => handleNavClick("mods"));
 if (sidebar) {
   sidebar.addEventListener("click", (e) => {
     if (e.target.closest(".sidebar-item")) return;
-    sidebar.classList.add("is-open");
+    
+    // Toggle logic: if clicking on the background or the border
+    const isOpen = sidebar.classList.contains("is-open");
+    const rect = sidebar.getBoundingClientRect();
+    const isBorderClick = e.clientX > rect.right - 10; // Clicks near the right edge
+    
+    if (isOpen) {
+      // If already open, clicking on the background or border closes it
+      sidebar.classList.remove("is-open");
+    } else {
+      sidebar.classList.add("is-open");
+    }
   });
 }
 

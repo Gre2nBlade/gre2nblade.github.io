@@ -142,18 +142,27 @@ function renderModsResults(finds, aiAnalysis = null) {
 async function handleModsFiles(fileList) {
   const files = Array.from(fileList || []);
   if (!files.length) return;
-  modsResults.innerHTML = "<p style='padding:10px;'>Анализируем...</p>";
+  
+  await Loader.show();
   
   const allFinds = [];
+  let loaded = 0;
   for (const f of files) {
     allFinds.push(...(await scanBlobForSuspiciousCode(f, f.name)));
+    loaded++;
+    Loader.setProgress(loaded / files.length);
   }
   
   let ai = null;
   const apiKey = document.getElementById("gemini-api-key")?.value;
   if (apiKey && allFinds.length) ai = await analyzeWithGemini(allFinds.slice(0, 10));
+  
   renderModsResults(allFinds, ai);
+  await Loader.hide();
 }
+
+// Make scanBlobForSuspiciousCode global for converter.js
+window.scanBlobForSuspiciousCode = scanBlobForSuspiciousCode;
 
 if (modsSelectButton && modsFileInput) {
   modsSelectButton.onclick = () => modsFileInput.click();
