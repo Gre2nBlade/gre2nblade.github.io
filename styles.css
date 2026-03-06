@@ -89,6 +89,171 @@ h1 {
   font-size: 14px;
 }
 
+/* ===========================
+   Pixel UI Base (Minecraft Style)
+=========================== */
+:root {
+  --pixel-bg-dark: #3a3a3a;
+  --pixel-border-black: #1a1e1a;
+  --pixel-btn-base: #d0d2d4;
+  --pixel-btn-outline: #e5e9ec;
+  --pixel-btn-bottom: #57595b;
+  --pixel-btn-hover: #3c8428;
+  --pixel-btn-hover-outline: #4f913b;
+  --pixel-btn-hover-bottom: #34542c;
+  --pixel-btn-active: #7d7d7d;
+  --pixel-btn-active-outline: #5c5c5c;
+  
+  --sw-off-gray: #7b7b7b;
+  --sw-on-green: #448933;
+  --sw-handle-light: #d8d8d8;
+  --sw-handle-shadow: #5a5a5a;
+}
+
+/* Pixel Button */
+.pixel-button-frame {
+  display: inline-flex;
+  position: relative;
+  width: 100%;
+  height: 54px;
+  background-color: var(--pixel-border-black);
+  padding: 4px;
+  box-sizing: border-box;
+  image-rendering: pixelated;
+  font-family: "Monocraft", monospace;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  vertical-align: middle;
+  margin-top: 16px;
+}
+
+.pixel-button-content {
+  width: 100%;
+  height: 100%;
+  background-color: var(--pixel-btn-base);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #3f3f3f;
+  font-size: 14px;
+  user-select: none;
+  border-bottom: 6px solid var(--pixel-btn-bottom);
+  box-shadow: inset 0px 0px 0px 3px var(--pixel-btn-outline);
+  box-sizing: border-box;
+  transition: all 0.05s ease;
+  padding: 0 10px;
+}
+
+.pixel-button-frame:hover .pixel-button-content {
+  background-color: var(--pixel-btn-hover);
+  color: white;
+  border-bottom-color: var(--pixel-btn-hover-bottom);
+  box-shadow: inset 0px 0px 0px 3px var(--pixel-btn-hover-outline);     
+}
+
+.pixel-button-frame:active .pixel-button-content {
+  border-bottom-width: 0px;
+  background-color: var(--pixel-btn-active);
+  color: white;
+  box-shadow: inset 0px 0px 0px 3px var(--pixel-btn-active-outline);    
+}
+
+.pixel-button-frame:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.pixel-button-frame:disabled .pixel-button-content {
+  background-color: #555;
+  border-bottom-color: #333;
+  box-shadow: inset 0px 0px 0px 3px #777;
+  color: #aaa;
+}
+
+/* Pixel Switch */
+.pixel-switch-container {
+  display: inline-block;
+}
+
+.pixel-switch-input {
+  display: none;
+}
+
+.pixel-switch {
+  position: relative;
+  width: 80px;
+  height: 40px;
+  background-color: var(--sw-off-gray);
+  border: 4px solid var(--pixel-border-black);
+  cursor: pointer;
+  image-rendering: pixelated;
+  display: flex;
+  align-items: center;
+  transition: background-color 0.3s ease;
+}
+
+.pixel-switch::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  pointer-events: none;
+}
+
+.status-icon-off {
+  position: absolute;
+  right: 12px;
+  width: 14px;
+  height: 14px;
+  border: 3px solid var(--pixel-border-black);
+  box-sizing: border-box;
+  transition: opacity 0.2s ease;
+  opacity: 1;
+}
+
+.status-icon-on {
+  position: absolute;
+  left: 16px;
+  width: 4px;
+  height: 20px;
+  background-color: white;
+  transition: opacity 0.2s ease;
+  opacity: 0;
+}
+
+.handle {
+  position: absolute;
+  left: -4px;
+  top: -8px;
+  width: 40px;
+  height: 46px;
+  background-color: var(--sw-handle-light);
+  border: 4px solid var(--pixel-border-black);
+  z-index: 10;
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
+  box-shadow: 
+    inset 0px -6px 0px 0px var(--sw-handle-shadow),
+    inset 0px -9px 0px 0px rgba(255, 255, 255, 0.5),
+    inset 0px 0px 0px 3px rgba(255, 255, 255, 0.5);
+}
+
+.pixel-switch-input:checked + .pixel-switch {
+  background-color: var(--sw-on-green);
+}
+
+.pixel-switch-input:checked + .pixel-switch .handle {
+  transform: translateX(40px);
+}
+
+.pixel-switch-input:checked + .pixel-switch .status-icon-on {
+  opacity: 1;
+}
+
+.pixel-switch-input:checked + .pixel-switch .status-icon-off {
+  opacity: 0;
+}
+
 button {
   font-family: "Inter", system-ui, sans-serif;
   margin-top: 16px;
@@ -422,102 +587,10 @@ footer a:hover {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
-  margin-top: 12px;
 }
 
-.action-btn {
-  margin-top: 0;
-  padding: 10px 12px;
-  width: 100%;
-  border: 2px solid var(--border);
-  background: var(--accent);
-  color: #fff;
-  font-weight: 700;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.action-btn.action-secondary {
+.action-secondary {
   grid-column: span 2;
-  background: transparent;
-  color: var(--text);
-}
-
-.action-btn.action-secondary:hover {
-  background: rgba(60, 133, 39, 0.10);
-}
-
-.preview-box {
-  border: 2px solid var(--border);
-  background: var(--bg);
-  height: 520px;
-  max-height: 70vh;
-  overflow: hidden;
-}
-
-/* Skin tab should grow naturally, но отображение
-   контролируется общим классом .tab-panel */
-#panel-skin {
-  overflow: visible;      /* ВАЖНО: не режем */
-  height: auto;
-  min-height: 0;
-}
-
-#panel-skin,
-#panel-skin * {
-  min-height: 0; /* fixes flex overflow clipping */
-}
-
-/* If you have some main container limiting height - neutralize */
-.tab-panel {
-  height: auto;
-  min-height: 0;
-  overflow: visible;
-}
-
-/* Make skin editor layout responsive and tall */
-.skin-editor-wrap {
-  width: 100%;
-  max-width: 100%;
-  overflow: visible;
-}
-
-/* Make the 3D canvas big */
-#skin3d {
-  width: 100%;
-  height: min(78vh, 820px); /* БОЛЬШОЙ редактор */
-  min-height: 520px;
-  display: block;
-  max-width: 100%;
-  border-radius: 16px;
-}
-
-/* Prevent canvas from being squished by flex/grid */
-.skin-preview {
-  width: 100%;
-  flex: 1;
-  min-width: 0;
-}
-
-/* If parent uses flex/grid, ensure it can grow */
-.skin-layout {
-  display: grid;
-  grid-template-columns: 320px 1fr; /* tools + preview */
-  gap: 16px;
-  align-items: start;
-}
-
-#skin3d {
-  width: 100%;
-  height: 520px;
-  display: block;
-  max-width: 100%;
-  border-radius: 14px;
-}
-
-#skin3d.paint-mode {
-  cursor: crosshair;
 }
 
 .segmented {
@@ -526,23 +599,16 @@ footer a:hover {
   gap: 10px;
 }
 
-.seg-btn {
+.seg-btn, .action-btn, .tool-btn {
   margin-top: 0;
-  padding: 10px 10px;
-  width: 100%;
-  border: 2px solid var(--border);
-  background: transparent;
-  color: var(--text);
-  font-weight: 700;
 }
 
-.seg-btn:hover {
-  background: rgba(60, 133, 39, 0.10);
-}
-
-.seg-btn.seg-active {
-  border-color: var(--accent);
-  background: rgba(60, 133, 39, 0.18);
+.tool-active .pixel-button-content,
+.seg-active .pixel-button-content {
+  background-color: var(--pixel-btn-hover);
+  color: white;
+  border-bottom-color: var(--pixel-btn-hover-bottom);
+  box-shadow: inset 0px 0px 0px 3px var(--pixel-btn-hover-outline);
 }
 
 .color-row {

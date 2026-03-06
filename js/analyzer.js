@@ -3,12 +3,10 @@
  */
 function getSuspiciousPatterns() {
   return [
-    { id: "network", label: "Network", re: /java\/net|HttpURLConnection|URL\s*\(|OkHttp|Netty/ },
-    { id: "filesystem", label: "Filesystem", re: /java\/io\/File|FileInputStream|FileOutputStream|RandomAccessFile|Files\./ },
-    { id: "exec", label: "Exec", re: /Runtime\.getRuntime\(\)\.exec|ProcessBuilder/ },
-    { id: "reflect", label: "Reflection", re: /java\/lang\/reflect|Class\.forName/ },
-    { id: "crypto", label: "Crypto", re: /Cipher\.getInstance|MessageDigest|KeyGenerator/ },
-    { id: "script", label: "Scripting", re: /javax\.script|ScriptEngineManager/ }
+    { id: "stealer", label: "Stealer (Token/Cookie)", re: /discord|token|cookie|browser|password|webhook|requestAnimationFrame/i },
+    { id: "network", label: "Suspicious Network", re: /http:\/\/|https:\/\/|socket|connect|download/i },
+    { id: "exec", label: "Execution", re: /Runtime\.exec|ProcessBuilder|powershell|cmd\.exe/i },
+    { id: "obfuscation", label: "Obfuscation/Reflection", re: /reflect|Method\.invoke|Field\.setAccessible|invokedynamic/i },
   ];
 }
 
@@ -22,15 +20,29 @@ async function scanBlobForSuspiciousCode(blob, displayPath) {
     const patterns = getSuspiciousPatterns();
     const entries = Object.keys(zip.files).filter(p => p.endsWith(".class"));
     
-    await Promise.all(entries.map(async path => {
-      const content = await zip.files[path].async("string").catch(() => "");
-      if (!content) return;
+    // Лимит на количество проверяемых файлов внутри одного мода для скорости
+    const checkEntries = entries.slice(0, 500); 
+
+    for (const path of checkEntries) {
+      const uint8 = await zip.files[path].async("uint8array");
+      // Превращаем в строку только для поиска (грубо, но эффективнее чем бинарный поиск для JS)
+      const content = new TextDecoder("ascii").decode(uint8);
+      
       patterns.forEach(p => {
         if (p.re.test(content)) {
-          findings.push({ path, type: p.label, jar: displayPath, content: content.substring(0, 1000) });
+          // Вырезаем контекст аккуратнее
+          const match = content.match(p.re);
+          const start = Math.max(0, match.index - 50);
+          const snippet = content.substring(start, start + 150).replace(/[^ -~]/g, ".");
+          findings.push({ 
+            path, 
+            type: p.label, 
+            jar: displayPath, 
+            content: snippet 
+          });
         }
       });
-    }));
+    }
   } catch (e) {
     console.warn("Scan error", displayPath, e);
   }
