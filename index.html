@@ -2,6 +2,12 @@
 <html lang="ru" data-theme="dark">
 <head>
   <meta charset="UTF-8" />
+  <script>
+    const MAINTENANCE_MODE = true;
+    if (MAINTENANCE_MODE && !window.location.pathname.includes("maintenance.html")) {
+      window.location.href = "maintenance.html";
+    }
+  </script>
   <title>Tools</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />

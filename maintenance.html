@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Технические работы | mtools</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body { 
+            background-color: #1a1a1a; 
+            color: white; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            margin: 0; 
+            font-family: "Monocraft", monospace;
+            text-align: center;
+        }
+        .m-container {
+            border: 6px solid #1a1e1a;
+            background: #3a3a3a;
+            padding: 40px;
+            box-shadow: inset 0 0 0 6px #57595b;
+            max-width: 600px;
+            image-rendering: pixelated;
+        }
+        h1 { color: #55ff55; font-size: 28px; margin-bottom: 20px; text-transform: uppercase; }
+        p { font-size: 18px; line-height: 1.6; color: #d0d2d4; margin-bottom: 30px; }
+        .pixel-art { font-size: 64px; margin-bottom: 20px; }
+        
+        .loader-mini {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto;
+            border: 4px solid #1a1e1a;
+            background: #111;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2px;
+            padding: 2px;
+        }
+        .mini-cell { background: #55ff55; animation: pulse 1.5s infinite ease-in-out; }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+    </style>
+</head>
+<body>
+    <div class="m-container">
+        <div class="pixel-art">🚧</div>
+        <h1>Технические работы</h1>
+        <p>
+            Мы обновляем чанки и перестраиваем редстоун-схемы.<br>
+            Сайт скоро вернется в строй!
+        </p>
+        <div class="loader-mini">
+            <div class="mini-cell"></div>
+            <div class="mini-cell" style="animation-delay: 0.2s"></div>
+            <div class="mini-cell" style="animation-delay: 0.4s"></div>
+            <div class="mini-cell" style="animation-delay: 0.6s"></div>
+        </div>
+        <div style="margin-top: 40px; font-size: 14px; color: #7b7b7b;">
+            © 2026 Gre2nBlade · mtools
+        </div>
+    </div>
+</body>
+</html>
